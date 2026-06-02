@@ -1,4 +1,4 @@
 dotfiles:
   repository: "kelvin-chappell/my-dotfiles"
   targetPath: "~/code/my-dotfiles"
-  installCommand: "install.sh"
+  installCommand: "./install.sh"
