@@ -1,0 +1,4 @@
+dotfiles:
+  repository: "kelvin-chappell/my-dotfiles"
+  targetPath: "~"
+  installCommand: "install.sh"
