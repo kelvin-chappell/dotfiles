@@ -1,19 +1,75 @@
-tap "guardian/devtools", trusted: true
-tap "hashicorp/tap"
-tap "homebrew/autoupdate"
-tap "unisonweb/unison"
+tap "guardian/devtools", "git@github.com:guardian/homebrew-devtools.git", trusted: true
+tap "unisonweb/unison", trusted: true
+# Search tool like grep, but optimized for programmers
+brew "ack"
+# Official Amazon AWS command-line interface
+brew "awscli"
+# Programmable completion for Bash 3.2
+brew "bash-completion"
+# C Foreign Function Interface for Python
+brew "cffi"
 # Container runtimes on MacOS (and Linux) with minimal setup
 brew "colima"
+# GNU File, Shell, and Text utilities
+brew "coreutils"
+# Cryptographic recipes and primitives for Python
+brew "cryptography"
+# Play, record, convert, and stream select audio and video codecs
+brew "ffmpeg"
+# Command-line fuzzy finder written in Go
+brew "fzf"
 # GitHub command-line tool
 brew "gh"
+# Distributed revision control system
+brew "git"
+# GNU Privacy Guard (OpenPGP)
+brew "gnupg"
+# Improved top (interactive process viewer)
+brew "htop"
+# C/C++ and Java libraries for Unicode and globalization
+brew "icu4c@77"
+# Lightweight and flexible command-line JSON processor
+brew "jq"
+# Asynchronous event library
+brew "libevent"
+# HTTP/2 C Library
+brew "libnghttp2"
+# TIFF library and utilities
+brew "libtiff"
 # Polyglot runtime manager (asdf rust clone)
 brew "mise"
-# Manage symlinks for dotfiles from a central directory
-brew "stow"
+# Simple tool to make locally trusted development certificates
+brew "mkcert"
+# HTTP(S) server and reverse proxy, and IMAP/POP3 proxy server
+brew "nginx"
+# Platform-neutral API for system-level and libc-like functions
+brew "nspr"
+# Libraries for security-enabled client and server applications
+brew "nss"
 # Manage multiple Node.js versions
 brew "nvm"
 # Development kit for the Java programming language
+brew "openjdk"
+# Development kit for the Java programming language
 brew "openjdk@21"
+# Execute binaries from Python packages in isolated environments
+brew "pipx"
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.12"
+# Build tool for Scala projects
+brew "sbt"
+# JVM-based programming language
+brew "scala"
+# Organize software neatly under a single directory tree (e.g. /usr/local)
+brew "stow"
+# Display directories as trees (with optional color/HTML output)
+brew "tree"
+# Validating, recursive, caching DNS resolver
+brew "unbound"
+# Executes a program periodically, showing output fullscreen
+brew "watch"
+# Internet file retriever
+brew "wget"
 # Tools to configure a local development nginx to proxy our applications and services
 brew "guardian/devtools/dev-nginx"
 # CLI tool for remediating auto-fixable AWS FSBP issues
@@ -22,6 +78,10 @@ brew "guardian/devtools/fsbp-fix"
 brew "guardian/devtools/self-assessment"
 # ssh replacement: CLI program that wraps SSM's EC2 Run Command
 brew "guardian/devtools/ssm"
+# Unison [Language] and Codebase Manager
+brew "unisonweb/unison/unison-language"
+# Browse, search and analyse your past AI coding sessions
+cask "agentsview"
 # Manage team projects and tasks
 cask "asana"
 # App to build and share containerised applications and microservices
@@ -55,6 +115,7 @@ cask "visual-studio-code"
 # Open-source code editor
 cask "visual-studio-code@insiders"
 vscode "0xcd.stylish-hindent"
+vscode "adam-bender.commit-message-editor"
 vscode "arrterian.nix-env-selector"
 vscode "bierner.github-markdown-preview"
 vscode "bierner.markdown-checkbox"
@@ -81,6 +142,7 @@ vscode "jasonnutter.vscode-codeowners"
 vscode "justusadam.language-haskell"
 vscode "k--kato.intellij-idea-keybindings"
 vscode "mechatroner.rainbow-csv"
+vscode "mhutchie.git-graph"
 vscode "mohithshrivastava.dx-code-companion"
 vscode "ms-azuretools.vscode-containers"
 vscode "ms-azuretools.vscode-docker"

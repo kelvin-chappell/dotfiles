@@ -35,3 +35,8 @@ export NVM_DIR="$HOME/.nvm"
 
 # Dev containers
 alias devdevenv="~/code/devenv/cli/target/universal/stage/bin/devenv"
+
+# Homebrew
+# Regenerate the Brewfile from currently installed packages (descriptions are
+# included by default).
+alias brewdump="brew bundle dump --file=~/code/dotfiles/brew/Brewfile --force"
