@@ -13,10 +13,10 @@ if ! command -v stow >/dev/null 2>&1; then
   exit 1
 fi
 
-# First run: --adopt pulls any existing real files in $HOME into the repo so
-# they can be reviewed with 'git diff' before committing.
-# On subsequent runs, replace --adopt with --restow to refresh symlinks.
-stow --adopt --target="$HOME" --dir="$DOTFILES_DIR" "${PACKAGES[@]}"
+# Refresh symlinks. --restow cleanly removes and re-creates links, which is safe
+# to run repeatedly. For a first-time setup on a new machine with pre-existing
+# real files in $HOME, temporarily switch --restow to --adopt to pull those
+# files into the repo, review with 'git diff', then switch back.
+stow --restow --target="$HOME" --dir="$DOTFILES_DIR" "${PACKAGES[@]}"
 
 echo "Dotfiles stowed successfully!"
-echo "Review adopted changes with 'git -C \"$DOTFILES_DIR\" diff' and revert unwanted overwrites with 'git checkout'."
