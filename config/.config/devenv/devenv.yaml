@@ -1,4 +1,4 @@
 dotfiles:
   repository: "https://github.com/kelvin-chappell/dotfiles"
   targetPath: "~/code/dotfiles"
-  installCommand: "bash install.sh"
+  installCommand: "bash ./install-devcontainer.sh"
