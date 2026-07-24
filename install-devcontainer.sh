@@ -53,8 +53,36 @@ if ! command -v stow >/dev/null 2>&1; then
   install_stow
 fi
 
+# Base images often ship real dotfiles. Stow refuses to overwrite regular files so move
+# any conflicting targets into a timestamped backup first. Existing symlinks and
+# directories are left alone: --restow handles links and stow merges into dirs.
+BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
+
+backup_conflicts() {
+  local pkg="$1"
+  local pkg_dir="$DOTFILES_DIR/$pkg"
+  local file rel target
+  while IFS= read -r -d '' file; do
+    rel="${file#"$pkg_dir"/}"
+    target="$HOME/$rel"
+    # Only a pre-existing regular file (not a symlink, not a directory) conflicts.
+    if [ -e "$target" ] && [ ! -L "$target" ] && [ ! -d "$target" ]; then
+      mkdir -p "$BACKUP_DIR/$(dirname "$rel")"
+      mv "$target" "$BACKUP_DIR/$rel"
+      echo "Backed up existing $target -> $BACKUP_DIR/$rel"
+    fi
+  done < <(find "$pkg_dir" -type f -print0)
+}
+
+for pkg in "${PACKAGES[@]}"; do
+  backup_conflicts "$pkg"
+done
+
 # --restow refreshes symlinks without adopting container defaults into the repo,
 # keeping the operation safe to run on every container (re)build.
 stow --restow --target="$HOME" --dir="$DOTFILES_DIR" "${PACKAGES[@]}"
 
 echo "Dotfiles stowed into $HOME successfully."
+if [ -d "$BACKUP_DIR" ]; then
+  echo "Any replaced files were backed up under $BACKUP_DIR."
+fi
