@@ -1,0 +1,115 @@
+tap "guardian/devtools", trusted: true
+tap "hashicorp/tap"
+tap "homebrew/autoupdate"
+tap "unisonweb/unison"
+# Container runtimes on MacOS (and Linux) with minimal setup
+brew "colima"
+# GitHub command-line tool
+brew "gh"
+# Polyglot runtime manager (asdf rust clone)
+brew "mise"
+# Manage symlinks for dotfiles from a central directory
+brew "stow"
+# Manage multiple Node.js versions
+brew "nvm"
+# Development kit for the Java programming language
+brew "openjdk@21"
+# Tools to configure a local development nginx to proxy our applications and services
+brew "guardian/devtools/dev-nginx"
+# CLI tool for remediating auto-fixable AWS FSBP issues
+brew "guardian/devtools/fsbp-fix"
+# CLI tool for generating a report of authored and reviewed Github pull requests, as well as an optional report of Trello cards
+brew "guardian/devtools/self-assessment"
+# ssh replacement: CLI program that wraps SSM's EC2 Run Command
+brew "guardian/devtools/ssm"
+# Manage team projects and tasks
+cask "asana"
+# App to build and share containerised applications and microservices
+cask "docker-desktop"
+# Web browser
+cask "firefox"
+# Desktop client for GitHub repositories
+cask "github"
+# Web browser
+cask "google-chrome"
+# Tools to protect your emails and files
+cask "gpg-suite"
+cask "guardian/devtools/gu-base"
+cask "guardian/devtools/gu-scala"
+# Open-source video transcoder
+cask "handbrake-app"
+# Java IDE by JetBrains
+cask "intellij-idea"
+# Knowledge base that works on top of a local folder of plain text Markdown files
+cask "obsidian"
+# Move and resize windows using keyboard shortcuts or snap areas
+cask "rectangle"
+# Plugin for AWS CLI to start and end sessions that connect to managed instances
+cask "session-manager-plugin"
+# Development environment
+cask "vagrant"
+# Virtualiser for arm64 hardware
+cask "virtualbox"
+# Open-source code editor
+cask "visual-studio-code"
+# Open-source code editor
+cask "visual-studio-code@insiders"
+vscode "0xcd.stylish-hindent"
+vscode "arrterian.nix-env-selector"
+vscode "bierner.github-markdown-preview"
+vscode "bierner.markdown-checkbox"
+vscode "bierner.markdown-emoji"
+vscode "bierner.markdown-footnotes"
+vscode "bierner.markdown-mermaid"
+vscode "bierner.markdown-preview-github-styles"
+vscode "bierner.markdown-yaml-preamble"
+vscode "davidanson.vscode-markdownlint"
+vscode "dbaeumer.vscode-eslint"
+vscode "docker.docker"
+vscode "eamodio.gitlens"
+vscode "editorconfig.editorconfig"
+vscode "elmtooling.elm-ls-vscode"
+vscode "esbenp.prettier-vscode"
+vscode "fabianlauer.vs-code-xml-format"
+vscode "github.vscode-github-actions"
+vscode "github.vscode-pull-request-github"
+vscode "golang.go"
+vscode "haskell.haskell"
+vscode "hbenl.vscode-test-explorer"
+vscode "hoovercj.haskell-linter"
+vscode "jasonnutter.vscode-codeowners"
+vscode "justusadam.language-haskell"
+vscode "k--kato.intellij-idea-keybindings"
+vscode "mechatroner.rainbow-csv"
+vscode "mohithshrivastava.dx-code-companion"
+vscode "ms-azuretools.vscode-containers"
+vscode "ms-azuretools.vscode-docker"
+vscode "ms-kubernetes-tools.vscode-kubernetes-tools"
+vscode "ms-playwright.playwright"
+vscode "ms-python.debugpy"
+vscode "ms-python.python"
+vscode "ms-python.vscode-pylance"
+vscode "ms-python.vscode-python-envs"
+vscode "ms-toolsai.jupyter"
+vscode "ms-toolsai.jupyter-keymap"
+vscode "ms-toolsai.jupyter-renderers"
+vscode "ms-toolsai.vscode-jupyter-cell-tags"
+vscode "ms-toolsai.vscode-jupyter-slideshow"
+vscode "ms-vscode-remote.remote-containers"
+vscode "ms-vscode.makefile-tools"
+vscode "ms-vscode.test-adapter-converter"
+vscode "ms-vsliveshare.vsliveshare"
+vscode "ndmitchell.haskell-ghcid"
+vscode "redhat.vscode-commons"
+vscode "redhat.vscode-xml"
+vscode "redhat.vscode-yaml"
+vscode "scala-lang.scala"
+vscode "scalameta.metals"
+vscode "sgryjp.vscode-stable-sort"
+vscode "shanoor.vscode-nginx"
+vscode "unison-lang.unison"
+vscode "usernamehw.errorlens"
+vscode "vscodevim.vim"
+vscode "xpo.local-history"
+vscode "xyz.local-history"
+npm "corepack"
