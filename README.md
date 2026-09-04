@@ -34,7 +34,8 @@ git checkout -- <path>   # discard an unwanted overwrite
 ## Dev containers
 
 For dev containers, use `install-devcontainer.sh` instead of `install.sh`. 
-The macOS-only `brew/` package is skipped.
+
+We don't bother installing `stow` and the macOS-only `brew` package is skipped.
 
 ## Usage
 
