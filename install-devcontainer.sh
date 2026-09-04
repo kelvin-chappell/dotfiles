@@ -91,20 +91,3 @@ if command -v zsh >/dev/null 2>&1; then
 else
   echo "zsh is not installed; keeping current shell." >&2
 fi
-
-# Install a curated set of skills into the *personal* skills
-# location (shared across all projects).
-if command -v npx >/dev/null 2>&1; then
-  echo "Installing selected skills into the personal skills location..."
-  SKILLS="code-review,codebase-design,diagnosing-bugs,domain-modeling,grill-with-docs,implement,improve-codebase-architecture,prototype,research,resolving-merge-conflicts,tdd,wayfinder,grill-me,grilling"
-
-  # --global installs to the personal (home) location instead of the project.
-  # --yes skips confirmation prompts so the command never blocks on input.
-  npx skills@1.5.23 add mattpocock/skills \
-    --skill "$SKILLS" \
-    --global \
-    --yes \
-    || echo "Skill installation failed; continuing." >&2
-else
-  echo "npx not found; skipping skills installation." >&2
-fi
