@@ -33,24 +33,8 @@ git checkout -- <path>   # discard an unwanted overwrite
 
 ## Dev containers
 
-For dev containers, use `install-devcontainer.sh` instead of `install.sh`. It
-resolves the repo location from the script itself (so no hardcoded home path is
-needed), installs GNU Stow via the container's package manager when missing
-(`apt-get`, `apk`, `dnf`, or `yum`), and uses `stow --restow` so it is safe to
-run on every container build.
-
-If you use the VS Code dotfiles feature, point it at this repo and set the
-install command:
-
-```jsonc
-{
-  "dotfiles.repository": "kelvin-chappell/dotfiles",
-  "dotfiles.installCommand": "bash ./install-devcontainer.sh"
-}
-```
-
-Only the portable packages (`git`, `zsh`, `config`) are stowed; the macOS-only
-`brew/` package is skipped.
+For dev containers, use `install-devcontainer.sh` instead of `install.sh`. 
+The macOS-only `brew/` package is skipped.
 
 ## Usage
 
