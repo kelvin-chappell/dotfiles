@@ -92,15 +92,10 @@ else
   echo "zsh is not installed; keeping current shell." >&2
 fi
 
-# Install a curated set of Matt Pocock's skills into the *personal* skills
-# location (shared across all projects) rather than into this repo.
-# Runs non-interactively so it works as a devcontainer command.
-# Pinned to skills 1.5.23 so npx can cache it instead of re-resolving @latest
-# over the network on every container create.
+# Install a curated set of skills into the *personal* skills
+# location (shared across all projects).
 if command -v npx >/dev/null 2>&1; then
   echo "Installing selected skills into the personal skills location..."
-
-  # The skills you want.
   SKILLS="code-review,codebase-design,diagnosing-bugs,domain-modeling,grill-with-docs,implement,improve-codebase-architecture,prototype,research,resolving-merge-conflicts,tdd,wayfinder,grill-me,grilling"
 
   # --global installs to the personal (home) location instead of the project.
