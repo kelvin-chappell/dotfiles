@@ -39,3 +39,55 @@ echo "Dotfiles copied into $HOME successfully."
 if [ -d "$BACKUP_DIR" ]; then
   echo "Any replaced files were backed up under $BACKUP_DIR."
 fi
+
+# Switch the default shell to zsh.
+# The copy step above only installs the zsh config files (e.g. ~/.zshrc); it
+# does not install the zsh binary or change the login shell. Do that here so
+# containers use zsh instead of continuing to default to bash.
+
+# Use sudo when available (many containers run as a non-root user).
+if command -v sudo >/dev/null 2>&1; then
+  SUDO="sudo"
+else
+  SUDO=""
+fi
+
+# Ensure the zsh binary is installed.
+if ! command -v zsh >/dev/null 2>&1; then
+  echo "zsh not found; attempting to install it..."
+  if command -v apt-get >/dev/null 2>&1; then
+    $SUDO apt-get update && $SUDO apt-get install -y zsh
+  elif command -v apk >/dev/null 2>&1; then
+    $SUDO apk add --no-cache zsh
+  elif command -v dnf >/dev/null 2>&1; then
+    $SUDO dnf install -y zsh
+  elif command -v yum >/dev/null 2>&1; then
+    $SUDO yum install -y zsh
+  else
+    echo "No supported package manager found; cannot install zsh." >&2
+  fi
+fi
+
+# Set zsh as the login shell, if it is available.
+if command -v zsh >/dev/null 2>&1; then
+  ZSH_PATH="$(command -v zsh)"
+
+  # zsh must be listed in /etc/shells for chsh to accept it.
+  if ! grep -qxF "$ZSH_PATH" /etc/shells 2>/dev/null; then
+    echo "$ZSH_PATH" | $SUDO tee -a /etc/shells >/dev/null || \
+      echo "Could not add $ZSH_PATH to /etc/shells." >&2
+  fi
+
+  # Change the login shell for the current user.
+  if command -v chsh >/dev/null 2>&1; then
+    if $SUDO chsh -s "$ZSH_PATH" "$(whoami)" 2>/dev/null; then
+      echo "Default shell changed to zsh ($ZSH_PATH)."
+    else
+      echo "Could not change login shell via chsh (may need different perms)." >&2
+    fi
+  else
+    echo "chsh not available; leaving login shell unchanged." >&2
+  fi
+else
+  echo "zsh is not installed; keeping current shell." >&2
+fi
