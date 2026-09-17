@@ -6,7 +6,7 @@ set -euo pipefail
 # The brew package is intentionally excluded (repo-only, not symlinked).
 
 DOTFILES_DIR="$HOME/code/dotfiles"
-PACKAGES=(git zsh config)
+PACKAGES=(git zsh config agents)
 
 if ! command -v stow >/dev/null 2>&1; then
   echo "Error: stow is not installed. Install it first, e.g. 'brew bundle --file=brew/Brewfile'." >&2

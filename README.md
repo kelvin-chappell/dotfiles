@@ -6,6 +6,7 @@ folder is a Stow "package" whose contents mirror the home directory:
 - `git/` -> `~/.gitconfig`, `~/.gitignore_global`
 - `zsh/` -> `~/.zshrc`
 - `config/` -> `~/.config/...` (for example `devenv`, `mise`)
+- `agents/` -> `~/.copilot/agents/...` (global custom agents)
 
 The `brew/` folder holds a `Brewfile` and is intentionally not symlinked.
 
@@ -23,26 +24,38 @@ brew bundle --file=brew/Brewfile
 ./install.sh
 ```
 
-This runs `stow --adopt`, which pulls any existing real files in `~` into the
-repo so nothing is lost. Review what was adopted and revert anything unwanted:
+This runs `stow --restow`, which refreshes the `git`, `zsh`, `config`, and
+`agents` symlinks without adopting existing files into the repo. Stow stops if
+a real file conflicts with a managed path, so move that file aside before
+running the installer again.
 
-```sh
-git diff
-git checkout -- <path>   # discard an unwanted overwrite
-```
+The custom Playwright agents are installed globally under
+`~/.copilot/agents`, making them available across repositories.
 
 ## Dev containers
 
-For dev containers, use `install-devcontainer.sh` instead of `install.sh`. 
+For dev containers, use `install-devcontainer.sh` instead of `install.sh`.
+It copies the portable packages (`git`, `zsh`, `config`, `agents`) into the
+container without requiring Stow. Existing regular files at managed paths are
+moved under `~/.dotfiles-backup/<timestamp>/` before copying, and the macOS-only
+`brew/` package is skipped.
 
-We don't bother installing `stow` and the macOS-only `brew` package is skipped.
+If you use the VS Code dotfiles feature, point it at this repo and set the
+install command:
+
+```jsonc
+{
+  "dotfiles.repository": "kelvin-chappell/dotfiles",
+  "dotfiles.installCommand": "bash ./install-devcontainer.sh"
+}
+```
 
 ## Usage
 
 - Refresh symlinks after adding or moving files:
 
   ```sh
-  stow --restow --target="$HOME" git zsh config
+  stow --restow --target="$HOME" git zsh config agents
   ```
 
 - Remove a package's symlinks:

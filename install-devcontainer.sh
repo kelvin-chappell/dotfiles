@@ -10,7 +10,7 @@ set -euo pipefail
 DOTFILES_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 # Portable packages only. The brew package is macOS-only and is never copied.
-PACKAGES=(git zsh config)
+PACKAGES=(git zsh config agents)
 
 # Backup location for any files we replace.
 BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
