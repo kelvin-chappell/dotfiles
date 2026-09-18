@@ -159,6 +159,15 @@
       "pluginName": "mattpocock-skills",
       "installedAt": "2026-09-18T13:00:20.745Z",
       "updatedAt": "2026-09-18T13:00:20.745Z"
+    },
+    "direct-style-scala": {
+      "source": "virtuslab/scala-skill",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/virtuslab/scala-skill.git",
+      "skillPath": "direct-style-scala/skills/direct-style-scala/SKILL.md",
+      "skillFolderHash": "a6e97a828d947f3c993c93e8634c118210a82ef1",
+      "installedAt": "2026-09-18T13:03:21.573Z",
+      "updatedAt": "2026-09-18T13:03:21.573Z"
     }
   },
   "dismissed": {
