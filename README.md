@@ -54,21 +54,18 @@ install command:
 
 - Adding a new skill in a dev container:
   ```sh
-  git clone git@github.com:kelvin-chappell/dotfiles.git ~/dotfiles
   mv "$HOME/.agents" "$HOME/dotfiles/agents/.agents"
   stow --restow \
    --target="$HOME" \
-   --dir="$HOME/dotfiles" \
+   --dir="$HOME/code/dotfiles" \
    agents
   ```
 
 - TODO: Adding a new agent:
   ```sh
-  git clone git@github.com:kelvin-chappell/dotfiles.git ~/dotfiles
-  mv "$HOME/.copilot/agents" "$HOME/dotfiles/agents/.copilot/agents"
   stow --restow \
    --target="$HOME" \
-   --dir="$HOME/dotfiles" \
+   --dir="$HOME/code/dotfiles" \
    agents
   ```
   
