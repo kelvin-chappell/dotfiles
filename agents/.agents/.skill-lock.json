@@ -19,6 +19,36 @@
       "skillFolderHash": "76a98a285cb0434f3d39e1a873823556330e398b",
       "installedAt": "2026-09-18T08:34:50.180Z",
       "updatedAt": "2026-09-18T08:34:50.180Z"
+    },
+    "playwright-cli": {
+      "source": "microsoft/playwright",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/microsoft/playwright.git",
+      "ref": "main",
+      "skillPath": "packages/playwright-core/src/tools/skills/playwright-cli/SKILL.md",
+      "skillFolderHash": "9173ae0136dd400dd8989ff80209c9197b18475b",
+      "installedAt": "2026-09-18T11:37:10.658Z",
+      "updatedAt": "2026-09-18T11:37:10.658Z"
+    },
+    "playwright-component-testing": {
+      "source": "microsoft/playwright",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/microsoft/playwright.git",
+      "ref": "main",
+      "skillPath": "packages/playwright-core/src/tools/skills/playwright-component-testing/SKILL.md",
+      "skillFolderHash": "d79a1d4412091c2c451772a03d8a12c40255ada2",
+      "installedAt": "2026-09-18T11:37:10.660Z",
+      "updatedAt": "2026-09-18T11:37:10.660Z"
+    },
+    "playwright-trace": {
+      "source": "microsoft/playwright",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/microsoft/playwright.git",
+      "ref": "main",
+      "skillPath": "packages/playwright-core/src/tools/skills/playwright-trace/SKILL.md",
+      "skillFolderHash": "4964895a22f45c0b0b496e88d551005877db52ea",
+      "installedAt": "2026-09-18T11:37:10.663Z",
+      "updatedAt": "2026-09-18T11:37:10.663Z"
     }
   },
   "dismissed": {

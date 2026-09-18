@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOTFILES_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+AGENTS_DIR="$DOTFILES_DIR/agents"
+LOCK_FILE="$AGENTS_DIR/.agents/.skill-lock.json"
+SKILLS_CLI_VERSION="${SKILLS_CLI_VERSION:-1.7.0}"
+
+if [ ! -f "$LOCK_FILE" ]; then
+  echo "Error: skill lockfile not found at $LOCK_FILE" >&2
+  exit 1
+fi
+
+if ! command -v npx >/dev/null 2>&1; then
+  echo "Error: npx is required to update agent skills." >&2
+  exit 1
+fi
+
+NODE_BIN="$(node -p 'process.execPath')"
+NODE_DIR="$(dirname "$NODE_BIN")"
+NPX_BIN="$NODE_DIR/npx"
+if [ ! -x "$NPX_BIN" ]; then
+  echo "Error: could not resolve the npx executable next to Node.js." >&2
+  exit 1
+fi
+
+(
+  export HOME="$AGENTS_DIR"
+  unset XDG_STATE_HOME
+  export npm_config_cache="${TMPDIR:-/tmp}/dotfiles-skills-npm-cache"
+  export PATH="$NODE_DIR:$PATH"
+
+  cd "$HOME"
+  DISABLE_TELEMETRY=1 "$NPX_BIN" --yes "skills@$SKILLS_CLI_VERSION" update --global --yes
+)
+
+"$DOTFILES_DIR/validate-agent-skills"

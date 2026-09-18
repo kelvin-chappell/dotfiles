@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOTFILES_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+AGENTS_DIR="$DOTFILES_DIR/agents/.agents"
+LOCK_FILE="$AGENTS_DIR/.skill-lock.json"
+SKILLS_DIR="$AGENTS_DIR/skills"
+
+node - "$LOCK_FILE" "$SKILLS_DIR" <<'NODE'
+const fs = require("node:fs");
+const path = require("node:path");
+
+const [, , lockFile, skillsDir] = process.argv;
+const maxFileBytes = Number(process.env.MAX_SKILL_FILE_BYTES || 1024 * 1024);
+const lock = JSON.parse(fs.readFileSync(lockFile, "utf8"));
+
+if (!lock.skills || typeof lock.skills !== "object") {
+  throw new Error("Skill lockfile must contain a skills object");
+}
+
+function walk(directory) {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = path.join(directory, entry.name);
+    const stats = fs.lstatSync(entryPath);
+
+    if (stats.isSymbolicLink()) {
+      throw new Error(`Symlinks are not allowed in skill directories: ${entryPath}`);
+    }
+    if (stats.isFile() && stats.size > maxFileBytes) {
+      throw new Error(`Skill file exceeds ${maxFileBytes} bytes: ${entryPath}`);
+    }
+
+    return entry.isDirectory() ? walk(entryPath) : [entryPath];
+  });
+}
+
+for (const entry of fs.readdirSync(skillsDir, { withFileTypes: true })) {
+  if (!entry.isDirectory()) continue;
+
+  const skillName = entry.name;
+  const skillDirectory = path.join(skillsDir, skillName);
+  const skillFile = path.join(skillDirectory, "SKILL.md");
+  const contents = fs.readFileSync(skillFile, "utf8");
+  const frontmatter = contents.match(/^---\n([\s\S]*?)\n---(?:\n|$)/);
+
+  if (!frontmatter) {
+    throw new Error(`Invalid or missing frontmatter: ${skillFile}`);
+  }
+
+  const declaredName = frontmatter[1].match(/^name:\s*["']?([^"'\n]+?)["']?\s*$/m)?.[1];
+  const description = frontmatter[1].match(/^description:\s*(.+)$/m)?.[1];
+
+  if (declaredName !== skillName) {
+    throw new Error(`Skill name '${declaredName}' does not match folder '${skillName}'`);
+  }
+  if (!description) {
+    throw new Error(`Skill description is missing: ${skillFile}`);
+  }
+
+  walk(skillDirectory);
+}
+
+for (const [skillName, metadata] of Object.entries(lock.skills)) {
+  const requiredFields = ["source", "sourceType", "sourceUrl", "skillPath", "skillFolderHash"];
+  const missingFields = requiredFields.filter((field) => !metadata[field]);
+
+  if (missingFields.length > 0) {
+    throw new Error(`Locked skill '${skillName}' is missing: ${missingFields.join(", ")}`);
+  }
+  if (!fs.existsSync(path.join(skillsDir, skillName, "SKILL.md"))) {
+    throw new Error(`Locked skill '${skillName}' is not installed`);
+  }
+}
+
+console.log(`Validated ${fs.readdirSync(skillsDir).length} agent skills (${Object.keys(lock.skills).length} managed upstream)`);
+NODE

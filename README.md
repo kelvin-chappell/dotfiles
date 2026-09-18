@@ -63,6 +63,43 @@ install command:
    agents
   ```
 
+- Adding a third-party skill:
+
+  ```sh
+  cd "$HOME/code/dotfiles/agents"
+  NODE_DIR="$(dirname "$(node -p 'process.execPath')")"
+  HOME="$PWD" XDG_STATE_HOME= npm_config_cache="${TMPDIR:-/tmp}/dotfiles-skills-npm-cache" \
+    PATH="$NODE_DIR:$PATH" "$NODE_DIR/npx" --yes skills@1.7.0 add \
+    <owner/repository> \
+    --skill <skill-name> \
+    --agent github-copilot \
+    --global \
+    --copy \
+    --yes
+  ../validate-agent-skills
+  ```
+
+  Third-party skills must be installed with the Skills CLI so their source and
+  content hash are recorded in `agents/.agents/.skill-lock.json`. Skills absent
+  from the lockfile are locally maintained. Treat the lockfile as generated
+  provenance and do not edit it manually.
+
+- Updating third-party skills:
+
+  ```sh
+  ./update-agent-skills
+  git diff -- agents/.agents
+  ```
+
+  The updater changes only skills recorded in the lockfile and validates all
+  installed skills afterward. Review updates as executable agent instructions,
+  paying particular attention to tool permissions, scripts, external links,
+  source changes, and licensing before committing them.
+
+  The `Update agent skills` GitHub Actions workflow runs weekly and can also be
+  started manually. When updates exist, it opens or refreshes a pull request;
+  updates are never merged automatically.
+
 - Adding a new global agent from a dev container:
 
   ```sh
