@@ -53,8 +53,10 @@ install command:
 ## Usage
 
 - Adding a new global skill from a dev container:
+
   ```sh
-  mv "$HOME/.agents" "$HOME/dotfiles/agents/.agents"
+  sudo apt install stow
+  mv "$HOME/.agents/*" "$HOME/dotfiles/agents/.agents"
   stow --restow \
    --target="$HOME" \
    --dir="$HOME/code/dotfiles" \
@@ -62,7 +64,10 @@ install command:
   ```
 
 - Adding a new global agent from a dev container:
+
   ```sh
+  sudo apt install stow
+  mv "$HOME/.copilot/agents/*" "$HOME/code/dotfiles/agents/.copilot/agents"
   stow --restow \
    --target="$HOME" \
    --dir="$HOME/code/dotfiles" \
