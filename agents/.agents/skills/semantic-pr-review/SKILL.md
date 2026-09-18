@@ -1,6 +1,6 @@
 ---
 name: semantic-pr-review
-description: 'Review a pull request as a fast, progressive Copilot Markdown result, given a required PR number and an optional owner/repository that defaults to the current Git repository. Accounts for every change, groups ripple effects under expandable causal changes, separates automatable checks from semantic review, ranks material by significance, and recommends reviewer expertise. Use for PR review, change-risk assessment, or reviewer selection.'
+description: 'Review a pull request as a fast, progressive result and an exportable final report, given a required PR number and an optional owner/repository that defaults to the current Git repository. Accounts for every change, groups ripple effects under collapsible causal changes, separates automatable checks from semantic review, ranks material by significance, and recommends reviewer expertise. Use for PR review, change-risk assessment, or reviewer selection.'
 ---
 
 # Semantic Pull Request Review
@@ -26,20 +26,20 @@ Use the portable argument form:
 - Do not report style or simple rule violations as semantic findings when a deterministic tool can check them.
 - Trace a change through definitions, callers, implementations, tests, configuration, documentation, and external contracts before deciding that edits are independent.
 - Distinguish evidence from inference. State uncertainty when the diff or repository context cannot establish behavior.
-- Deliver useful results in Copilot chat before pursuing depth. Do not make report-file generation, browser opening, checkout, cloning, or exhaustive validation part of the critical path.
+- Deliver useful results in Copilot chat before pursuing depth. Do not make final report generation, browser opening, checkout, cloning, or exhaustive validation part of the initial-response critical path.
+- Finish with a self-contained HTML report outside the reviewed repository. Report creation is an allowed review output, not a modification to the pull request or its worktree.
 
-## Review Clock And Significance
+## Responsiveness And Significance
 
-Start a monotonic review clock as soon as the PR target is resolved. These deadlines are hard limits:
+Start a monotonic review clock as soon as the PR target is resolved. Optimise for a rapid first result without imposing a time limit on the completed review:
 
 - **Immediately:** post a one-line `Starting` update naming the PR and the first bounded evidence batch.
-- **By 10 seconds:** post an `Initial` Copilot Markdown result containing all grounded findings, a conceptual change map, and the complete changed-file inventory. Mark files and clusters not yet semantically reviewed as `Queued`; never speculate to fill the result.
-- **From 10 to 45 seconds:** deepen analysis in descending significance.
+- **Target 10 seconds:** post an `Initial` Copilot Markdown result containing all grounded findings, a conceptual change map, and the complete changed-file inventory. Mark files and clusters not yet semantically reviewed as `Queued`; never speculate to fill the result. If an external call prevents this, post the available scope and name the blocked evidence instead of waiting silently.
+- **After the initial result:** deepen analysis in descending significance until the completion criteria are met or a concrete external blocker prevents further review.
 - **During analysis:** post a compact `Progress` result whenever a high-significance finding is grounded or a conceptual cluster is completed. Do not wait for the final result to reveal material findings.
-- **At 45 seconds:** stop opening investigative branches. Do not start another search, history query, test, linked-issue traversal, or specialist investigation. Consolidate evidence and enumerate skipped scope.
-- **By 60 seconds:** post the final `Complete` result, or `Complete at deadline` when scope remains. Stop regardless and identify every queued or partially reviewed cluster and file as residual risk.
+- **At completion:** generate the exportable report, post its path or link with a compact conclusion, and identify any scope that a concrete blocker left partial.
 
-Prefer bounded operations with explicit result limits. Abandon unavailable, rate-limited, or slow context instead of breaching the deadline. External calls may outlive a requested timeout, so use conservative cut-offs and do not depend on late results.
+Prefer bounded operations with explicit result limits. Parallelise independent evidence gathering and abandon unavailable or rate-limited context after recording it as residual risk. Do not trade review completeness for an arbitrary elapsed-time cutoff.
 
 Use this significance order for investigation and presentation:
 
@@ -84,25 +84,28 @@ Within a tier, rank by user impact, then blast radius, confidence, and difficult
    - Record concrete defects or risks as findings, grounded in file paths and line numbers.
    - Recommend the kind of human review the cluster needs and explain why. Be specific: security, privacy, domain/product, language/runtime, framework, data/storage, API compatibility, distributed systems, accessibility, performance, operations/SRE, or another relevant specialty.
    - Use `general software engineer` only when no narrower expertise is material.
-   - Work in significance order. At 45 seconds, stop expanding the review and move to finalization even when a cluster is incomplete.
+   - Work in significance order and continue until every significant cluster has been reviewed or a named external blocker prevents further investigation.
 
 5. Check the whole-PR story.
    - Confirm that the clusters collectively implement the stated intent without contradictory assumptions or uncovered transitions between them.
    - Check that tests exercise the significant behavior rather than only the mechanical ripple.
    - Note missing context or unavailable validation as residual risk; do not invent conclusions.
    - Reconcile the final inventory totals with the PR changed-file summary. No file may disappear between progressive results.
-   - Post the final result no later than 60 seconds. Use `Complete at deadline` and identify all skipped scope when coverage is incomplete.
+   - Generate the final report only after reconciliation. Use `Complete` when every file and non-trivial hunk is accounted for; use `Partial` only when a named external blocker prevents completion, and identify all affected scope.
 
-## Copilot Delivery
+## Delivery
 
-Render progressive results directly in GitHub-flavoured Markdown using [COPILOT-REPORT.md](COPILOT-REPORT.md).
+Render progressive results directly in GitHub-flavoured Markdown, then generate the final exportable report using [COPILOT-REPORT.md](COPILOT-REPORT.md).
 
 - Keep the visible summary short: status, coverage, findings, and one line per conceptual cluster.
-- Put supporting evidence, per-file changes, ripple effects, and review guidance inside native `<details>` blocks with descriptive `<summary>` text.
+- Put every conceptual change cluster inside its own native `<details>` block with a descriptive `<summary>`, including single-file, routine, generated, formatting, import-only, and automation groups.
 - Keep actionable findings expanded and ahead of change clusters. Keep routine, generated, formatting, import-only, and automation detail collapsed.
 - In every result, show `reviewed files / total files`, `reviewed clusters / total clusters`, and the current elapsed time.
-- Use ordinary Markdown links for trusted GitHub file and line references. Do not generate a separate artifact unless the user asks for one.
+- Use ordinary Markdown links for trusted GitHub file and line references.
 - Progressive updates may add evidence or move an item from `Queued` to `Partial` or `Reviewed`, but must not silently remove an earlier finding, cluster, or file. Explicitly mark corrections and reclassifications.
+- Write the final report as one self-contained `.html` file under `${TMPDIR:-/tmp}` unless the user requests another destination. Use a collision-resistant name containing the owner, repository, PR number, and UTC timestamp. Do not write it into the reviewed repository.
+- Embed all CSS and report content; do not depend on JavaScript, external fonts, images, stylesheets, or network access. Use semantic HTML, native `<details>`/`<summary>` disclosure controls, and print styles.
+- Open or attach the report using the available environment capability, then provide its path or link in the final chat response. The final chat response is a compact hand-off to the report, not a second full copy.
 
 Lead with actionable findings in decreasing severity and significance. For each finding include:
 
@@ -139,6 +142,6 @@ End with coverage and residual risk, including:
 - Scope reviewed and anything excluded
 - Relevant validation or status checks observed
 - Missing tests, unavailable context, unresolved uncertainty, or specialist review still required
-- Every skipped or unreviewed cluster when the deadline expires
+- Every partial or unreviewed cluster when an external blocker prevents completion
 
 Keep the result organized by causal change, not by file order. Prefer a small number of well-supported clusters over a hunk-by-hunk narration, while retaining an exhaustive per-file and per-hunk accounting inside those clusters. Rank every section with the same significance model.
