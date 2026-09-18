@@ -52,7 +52,7 @@ install command:
 
 ## Usage
 
-- Adding a new skill in a dev container:
+- Adding a new global skill from a dev container:
   ```sh
   mv "$HOME/.agents" "$HOME/dotfiles/agents/.agents"
   stow --restow \
@@ -61,7 +61,7 @@ install command:
    agents
   ```
 
-- TODO: Adding a new agent:
+- Adding a new global agent from a dev container:
   ```sh
   stow --restow \
    --target="$HOME" \
