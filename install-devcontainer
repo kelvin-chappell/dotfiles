@@ -12,8 +12,16 @@ DOTFILES_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 # Portable packages only. The brew package is macOS-only and is never copied.
 PACKAGES=(git zsh config agents)
 
-# Backup location for any files we replace.
-BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
+# Backup location for any files we replace. Create it lazily so an idempotent
+# run does not leave an empty backup directory.
+BACKUP_DIR=""
+
+create_backup_dir() {
+  if [ -z "$BACKUP_DIR" ]; then
+    mkdir -p "$HOME/.dotfiles-backup"
+    BACKUP_DIR="$(mktemp -d "$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)-XXXXXX")"
+  fi
+}
 
 for pkg in "${PACKAGES[@]}"; do
   pkg_dir="$DOTFILES_DIR/$pkg"
@@ -23,8 +31,14 @@ for pkg in "${PACKAGES[@]}"; do
     rel="${file#"$pkg_dir"/}"
     target="$HOME/$rel"
 
-    # Back up an existing regular file (not a symlink) before overwriting it.
-    if [ -f "$target" ] && [ ! -L "$target" ]; then
+    # Leave an already-correct file or symlink untouched.
+    if [ -f "$target" ] && cmp -s "$file" "$target"; then
+      continue
+    fi
+
+    # Back up any conflicting path, including dangling symlinks.
+    if [ -e "$target" ] || [ -L "$target" ]; then
+      create_backup_dir
       mkdir -p "$BACKUP_DIR/$(dirname "$rel")"
       mv "$target" "$BACKUP_DIR/$rel"
       echo "Backed up existing $target -> $BACKUP_DIR/$rel"
@@ -36,7 +50,7 @@ for pkg in "${PACKAGES[@]}"; do
 done
 
 echo "Dotfiles copied into $HOME successfully."
-if [ -d "$BACKUP_DIR" ]; then
+if [ -n "$BACKUP_DIR" ]; then
   echo "Any replaced files were backed up under $BACKUP_DIR."
 fi
 
