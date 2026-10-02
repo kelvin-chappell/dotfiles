@@ -1,5 +1,5 @@
 ---
-name: scala-lts-upgrade
+name: my-scala-lts-upgrade
 description: 'Upgrade a Scala repository incrementally to the latest Scala LTS with minimal changes. Use when asked to upgrade, migrate, modernise, or bump Scala, including Scala 2.12 and Scala 2.13 to Scala 3 migrations. Requires reviewing Guardian Scala upgrade issue #16 and its links only when starting from Scala 2.13. Advances one LTS-line checkpoint per invocation, ignores Scala Next lines as upgrade targets, follows the official Scala 3.9 upgrade order and compiler rewrites, requires zero errors, warnings, and deprecated usages, and enforces brace syntax with -no-indent on Scala 3.'
 argument-hint: 'Upgrade this repository by one checkpoint towards the latest Scala LTS'
 ---
@@ -12,7 +12,7 @@ Authoritative migration guidance: <https://scala-lang.org/news/3.9/#recommended-
 
 ## Non-negotiable rules
 
-- Perform exactly one Scala version checkpoint per invocation. After that checkpoint passes, report the next target and stop. Never begin it in the same invocation.
+- Perform exactly one Scala version checkpoint per invocation for the upgrade target, preserving any user-approved cross-publishing versions. After that checkpoint passes, report the next target and stop. Never begin it in the same invocation.
 - Do not commit unless the user explicitly asks. Recommend a commit at each completed checkpoint because the official guidance requires independently reviewable steps.
 - Make the smallest changes needed for the current checkpoint. Do not combine dependency modernisation, formatting churn, refactoring, or adoption of new language features with the compiler upgrade.
 - The checkpoint is incomplete until all compile, test, documentation, and enabled lint tasks finish with zero errors and zero warnings, including deprecation warnings.
@@ -58,11 +58,25 @@ For a Scala 2.13 starting version, this prerequisite is complete only when the i
 Before editing, determine:
 
 - every place defining Scala, JDK, sbt/Mill/Scala CLI, Scala.js, compiler plugin, and formatter versions
-- modules and cross-build matrices, including `crossScalaVersions`
+- modules, cross-build matrices, and cross-publishing configuration, including `crossScalaVersions`, build matrices, and release workflows
 - compile, test, integration-test, Scaladoc, formatting, lint, MiMa, and packaging commands used by CI
 - current compiler options and warning policy in every configuration
 - Scala.js usage, Scala 2.13 TASTy-reader consumers, macros, compiler plugins, and runtime `scala-reflect` use
 - dirty files that must be preserved
+
+### Cross-publishing decision
+
+If the repository has cross-publishing configuration, obtain an explicit user decision before any upgrade or prerequisite edits. Present the current published modules and exact Scala version matrix, identify the lowest supported version per module, and prompt with these options using `ask_user` when available:
+
+1. **Keep cross-publishing as is:** retain the existing published Scala versions unchanged.
+2. **Change the versions:** ask for the exact versions to retain, add, or replace, and confirm the resulting matrix.
+3. **Remove cross-publishing:** ask which single Scala version to support and confirm the affected published modules.
+
+Explain downstream compatibility consequences before confirming the choice. If a retained publishing version prevents the proposed upgrade, report the conflict and ask for a revised decision rather than silently changing the matrix. If the user is unavailable, pause before editing; an automatic default does not satisfy this decision gate. A previously explicit decision may be reused if its module scope and version matrix still apply.
+
+Record the approved matrix and lowest supported version for each published module. Honour this decision throughout the route, build settings, dependencies, source migrations, CI, release workflows, and documentation. The checkpoint route advances only the selected upgrade target; retained publishing versions are compatibility targets, not extra checkpoints to upgrade automatically. If keeping publishing unchanged leaves no published version to upgrade, clarify whether the upgrade applies to non-published modules or requires a revised publishing decision.
+
+Keep shared sources, public APIs, dependencies, compiler options, and generated code compatible with every approved version, especially the lowest. Use existing version-specific source directories and conditional build settings when necessary, and restrict compiler rewrites to compatible source scopes. Newer-language syntax and APIs belong only in source sets that exclude older supported versions.
 
 Resolve versions from primary sources at execution time:
 
@@ -77,7 +91,7 @@ Ignore versions containing `RC`, `M`, `SNAPSHOT`, `NIGHTLY`, `alpha`, or `beta`.
 Apply this order without changing Scala prematurely:
 
 1. Upgrade the build tool only if the next Scala target requires it. Validate and stop if this itself is a substantial migration; resume the Scala checkpoint on the next invocation.
-2. Move to the target's minimum supported JDK while retaining the current Scala version where possible. Scala 3.8 and later require JDK 17 or newer. Update all version declarations consistently, including `.tool-versions` when the repository uses mise.
+2. Move to the target's minimum supported JDK while retaining the current Scala version where possible. Scala 3.8 and later require JDK 17 or newer. Distinguish the build JDK from published bytecode and downstream runtime baselines; preserve the approved matrix's compatibility requirements and use version-specific release targets where necessary. Update all version declarations consistently, including `.tool-versions` when the repository uses mise.
 3. Upgrade Scala.js before Scala if required. Account for downstream baseline changes; Scala 3.9 fixes Scala.js 1.22 for that LTS line.
 4. Upgrade the Scala compiler for the current checkpoint and apply only the required source migrations.
 5. Upgrade libraries only after the Scala compiler checkpoint needs them. Change only incompatible dependencies and compiler plugins; defer unrelated updates.
@@ -146,6 +160,8 @@ Run the narrow compile immediately after the first version edit. Repair only the
 4. Scaladoc or documentation compilation
 5. configured lint, MiMa, packaging, and CI-equivalent checks
 
+For cross-published modules, run these checks for every version in the approved matrix, explicitly selecting the lowest version first. Verify that CI and release configuration build the same matrix and that local packaging or publishing checks produce each expected artifact, without publishing remotely. When cross-publishing is removed, verify that only the approved single version remains configured. An unsupported lowest version or an untested retained version fails the checkpoint; success on the newest version alone is insufficient.
+
 Inspect complete output for warnings even when commands exit successfully. Also check startup or a focused runtime smoke test when reflection, macros, serialization, or framework bootstrapping is involved.
 
 The gate fails on any warning, ignored option, deprecation, skipped required suite, compile error, test failure, or unexplained source-compatibility flag.
@@ -159,6 +175,7 @@ At the end, report:
 - rewrites applied and temporary flags removed
 - exact validation commands and outcomes, explicitly confirming zero errors, warnings, and deprecations
 - known compatibility risks checked
+- the cross-publishing decision, approved version matrix, and validation outcome for each version, explicitly identifying the lowest supported version per published module
 - the next planned checkpoint
 - a recommendation to review and commit this checkpoint
 
