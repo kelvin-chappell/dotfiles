@@ -34,11 +34,13 @@ The custom Playwright agents are installed globally under
 
 ## Dev containers
 
-For dev containers, use `install-devcontainer.sh` instead of `install.sh`.
-It copies the portable packages (`git`, `zsh`, `config`, `agents`) into the
-container without requiring Stow. Existing regular files at managed paths are
-moved under `~/.dotfiles-backup/<timestamp>/` before copying, and the macOS-only
-`brew/` package is skipped.
+For dev containers, use `install-in-devcontainer` instead of `install`.
+It symlinks files from the portable packages (`git`, `zsh`, `config`, `agents`)
+into the container without requiring Stow. Existing files and conflicting
+symlinks at managed paths are moved under `~/.dotfiles-backup/<timestamp>/`
+before linking, even if their contents match. Correct symlinks are left
+untouched on subsequent runs, and the macOS-only `brew/` package is skipped.
+Keep the repository available at the same path so the symlinks remain valid.
 
 If you use the VS Code dotfiles feature, point it at this repo and set the
 install command:
@@ -46,7 +48,7 @@ install command:
 ```jsonc
 {
   "dotfiles.repository": "kelvin-chappell/dotfiles",
-  "dotfiles.installCommand": "bash ./install-devcontainer.sh"
+  "dotfiles.installCommand": "bash ./install-in-devcontainer"
 }
 ```
 
