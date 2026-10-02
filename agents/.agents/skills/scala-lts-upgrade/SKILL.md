@@ -1,6 +1,6 @@
 ---
 name: scala-lts-upgrade
-description: 'Upgrade a Scala repository incrementally to the latest Scala LTS with minimal changes. Use when asked to upgrade, migrate, modernise, or bump Scala, including Scala 2 to Scala 3 migrations. Advances one LTS-line checkpoint per invocation, ignores Scala Next lines as upgrade targets, follows the official Scala 3.9 upgrade order and compiler rewrites, requires zero errors, warnings, and deprecated usages, and enforces brace syntax with -no-indent on Scala 3.'
+description: 'Upgrade a Scala repository incrementally to the latest Scala LTS with minimal changes. Use when asked to upgrade, migrate, modernise, or bump Scala, including Scala 2.12 and Scala 2.13 to Scala 3 migrations. Requires reviewing Guardian Scala upgrade issue #16 and its links only when starting from Scala 2.13. Advances one LTS-line checkpoint per invocation, ignores Scala Next lines as upgrade targets, follows the official Scala 3.9 upgrade order and compiler rewrites, requires zero errors, warnings, and deprecated usages, and enforces brace syntax with -no-indent on Scala 3.'
 argument-hint: 'Upgrade this repository by one checkpoint towards the latest Scala LTS'
 ---
 
@@ -35,6 +35,23 @@ Build the complete route before editing:
 Do not add Scala Next lines such as 3.4, 3.5, 3.6, 3.7, or 3.8 to the durable route. Migration flags for crossed source levels still run in order. As of Scala 3.9, `3.7.4` may be used temporarily before the 3.8 standard-library boundary and `3.9.0` may be used for the improved `with`-type rewrite, but a temporary rewrite compiler is not a checkpoint and must not remain as the repository's selected Scala version.
 
 If the current version is a Scala Next line, target the next later LTS directly while applying every crossed migration mode; do not first move to the latest patch of that Scala Next line. If the current version already equals a route target, omit that no-op target. If the repository is newer than the latest LTS, do not downgrade automatically; explain the situation and stop.
+
+## Phase 0: Identify the starting version and select guidance
+
+On every invocation, first inspect the build's Scala version declarations to identify the current version of the modules being upgraded.
+
+When starting from Scala 2.12, proceed directly to Phase 1 using the normal checkpoint route through Scala 2.13. Skip the Guardian issue and its links for this invocation; their availability does not block Scala 2.12 work. Apply the review on a later invocation that starts from Scala 2.13. For other starting versions, also proceed directly to Phase 1.
+
+Only when starting from Scala 2.13, complete this prerequisite before further repository inspection, upgrade advice, planning, prerequisite changes, or implementation:
+
+1. Read the current body and comments of [guardian/maintaining-scala-projects#16](https://github.com/guardian/maintaining-scala-projects/issues/16), whose starting assumption is Scala 2.13.
+2. Open every link in the issue body and comments. The current starting references are [guardian/pan-domain-authentication#165](https://github.com/guardian/pan-domain-authentication/pull/165), [guardian/permissions#433](https://github.com/guardian/permissions/pull/433), and the [Scala 3 upgrade document](https://docs.google.com/document/d/17wOlbVzYJF01yjZpRzgNifb--SFDDjPpanffv0eaGRg/edit?usp=sharing). Discover additions from the live issue rather than treating this list as exhaustive.
+3. For linked migration PRs, inspect their descriptions, relevant diffs, comments, and inline review discussions, including later corrections. Follow further links that explain migration decisions or compatibility constraints; unrelated deployment links do not require investigation.
+4. Record the applicable lessons and their source URLs before proceeding. In particular, assess downstream JVM and bytecode baselines, published-library cross-builds, Play overload return types and implicit imports, case-class `unapply` changes, and version-independent assembly paths. Treat examples as evidence, not instructions to copy their historical Scala versions or drop supported consumers. Reconcile them with current official guidance and the repository's compatibility requirements in Phase 1.
+
+If the linked Google Doc is inaccessible, skip it and continue using the accessible sources. Exclude it from citations and recommendations; do not infer its contents or request access.
+
+For a Scala 2.13 starting version, this prerequisite is complete only when the issue and required linked guidance have been reviewed and their implications recorded, with inaccessible Google Docs excluded. If any other required source is inaccessible, report its URL and access failure, request access or user-provided contents, and stop before upgrade work. A cached summary or an unread required link does not satisfy the review.
 
 ## Phase 1: Inspect and plan
 
