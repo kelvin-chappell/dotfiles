@@ -86,6 +86,12 @@ Resolve versions from primary sources at execution time:
 
 Ignore versions containing `RC`, `M`, `SNAPSHOT`, `NIGHTLY`, `alpha`, or `beta`. Do not assume Maven's `<release>` is stable. Record the full route, identify only the next checkpoint, and state the cheapest command that can falsify the proposed change.
 
+### Pre-edit validation baseline
+
+Before any source, version, prerequisite, or compiler-option edits, run the narrowest existing compile and relevant test commands for the affected modules under their current Scala versions. For cross-published modules, include the existing supported matrix, starting with its lowest version. Record the exact commands, toolchain versions, outcomes, and existing warnings or failures so later diagnostics can be compared with the baseline.
+
+Report pre-existing failures separately from upgrade regressions, without fixing unrelated issues or relaxing the final zero-warning gate. If baseline execution is blocked, report the command and cause and resolve the blocker before editing; static inspection alone does not establish a passing baseline.
+
 ## Phase 2: Prepare prerequisites in official order
 
 Apply this order without changing Scala prematurely:
@@ -148,6 +154,14 @@ Ensure the project's equivalent of these diagnostics is enabled for all maintain
 
 Do not blindly add duplicate or unsupported flags. Ask the selected compiler for its supported options and adapt conditional build settings for cross-built modules.
 
+### Value discards and effect sequencing
+
+Keep new `for` comprehensions and statement blocks free of redundant discard bindings. Introduce `val _ = expression` or `_ = expression` only when an observed diagnostic requires an explicit, intentional discard of a non-`Unit` value and the expression's completion and failure are already handled. Leave `Unit`-returning statements unwrapped when the supported compilers accept them.
+
+For operations returning `Future`, `Either`, `Try`, or another effect type, consume or sequence the result using the repository's established approach. In a compatible `for` comprehension, use a generator such as `_ <- operation` when the result is unused but completion and failure must participate in the chain. Verify evaluation order, eager or lazy execution, and failure propagation before changing a binding into a generator; it is not a mechanical replacement for every discard.
+
+Review every newly introduced discard binding against its diagnostic and behaviour. A discarded effect or a binding added merely to make warning output disappear fails the checkpoint.
+
 Search source and generated-code configuration for deprecated API use that compilation may not cover. Replace deprecated code with the documented equivalent while preserving behaviour.
 
 ## Phase 5: Validate the checkpoint
@@ -162,6 +176,8 @@ Run the narrow compile immediately after the first version edit. Repair only the
 
 For cross-published modules, run these checks for every version in the approved matrix, explicitly selecting the lowest version first. Verify that CI and release configuration build the same matrix and that local packaging or publishing checks produce each expected artifact, without publishing remotely. When cross-publishing is removed, verify that only the approved single version remains configured. An unsupported lowest version or an untested retained version fails the checkpoint; success on the newest version alone is insufficient.
 
+For JVM artifacts, run relevant tests or a consumer smoke test on the minimum supported JVM for each published module and Scala artifact, exercising the packaged artifact and its runtime dependencies. A newer build JDK or a compatible bytecode release target alone does not prove runtime compatibility. Use mise-managed toolchains and the repository's `.tool-versions` conventions where applicable. If test tooling requires a newer JVM, use a minimal consumer smoke test on the supported minimum instead. An unavailable minimum JVM or a failed runtime check is a blocker; report it rather than claiming compatibility or raising the runtime baseline without approval.
+
 Inspect complete output for warnings even when commands exit successfully. Also check startup or a focused runtime smoke test when reflection, macros, serialization, or framework bootstrapping is involved.
 
 The gate fails on any warning, ignored option, deprecation, skipped required suite, compile error, test failure, or unexplained source-compatibility flag.
@@ -174,8 +190,10 @@ At the end, report:
 - prerequisite, build, source, and dependency files changed
 - rewrites applied and temporary flags removed
 - exact validation commands and outcomes, explicitly confirming zero errors, warnings, and deprecations
+- pre-edit baseline outcomes and any pre-existing failures distinguished from upgrade regressions
 - known compatibility risks checked
 - the cross-publishing decision, approved version matrix, and validation outcome for each version, explicitly identifying the lowest supported version per published module
+- minimum supported JVMs and the artifact-level runtime checks performed on them
 - the next planned checkpoint
 - a recommendation to review and commit this checkpoint
 
