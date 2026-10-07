@@ -1,10 +1,10 @@
 ---
-name: global-git-commit
+name: my-git-commit
 description: 'Create careful Git commits in any repository. Use when asked to commit changes, prepare a commit, write a commit message, stage files for a commit, amend a commit, or verify a commit before creation.'
 argument-hint: 'Describe the changes to commit and any message or scope requirements'
 ---
 
-# Global Git Commit
+# My Git Commit
 
 Create a focused, reviewable Git commit while preserving unrelated work.
 
@@ -41,6 +41,9 @@ Create a focused, reviewable Git commit while preserving unrelated work.
    - Write the description in imperative, lower-case wording without a trailing period.
    - Mark breaking changes with `!` before the colon and explain them in a `BREAKING CHANGE:` footer.
    - Keep the subject focused and omit a body unless it adds useful rationale or context.
+   - Limit the entire subject line to 50 characters, including the type, scope, breaking-change marker, spaces, and punctuation.
+   - Limit every body line to 72 characters, including footers and trailers; wrap prose and shorten or reword content as needed.
+   - Count characters in the complete message before committing and revise any line that exceeds its limit.
 8. Create the commit normally so configured hooks run: `git commit -m '<subject>'`.
    - Use additional `-m` arguments for body paragraphs when needed.
    - Never use `--no-verify` unless explicitly requested after explaining the risk.
@@ -66,4 +69,5 @@ A commit is complete only when:
 - Relevant validation passed, or the user explicitly accepted a clearly reported failure.
 - Commit hooks completed successfully unless the user explicitly authorized bypassing them.
 - The new commit hash and subject were verified.
+- The stored commit message was checked against the subject and body line limits, including any changes made by hooks.
 - Remaining working-tree changes were preserved and reported.
