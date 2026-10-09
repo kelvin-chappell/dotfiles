@@ -10,6 +10,7 @@ Produce a verified clean starting point for new work, preserving application beh
 
 ## Contract
 
+- **Ecosystem scope:** change only Scala code, build configuration, resources and files belonging to the Scala/Java/Maven ecosystem (sbt, Maven coordinates, JVM tooling and their CI/tool-version declarations). Never inspect for upgrade, edit or regenerate dependencies in other ecosystems, such as `package.json`, npm/yarn/pnpm lockfiles, pip, Go modules or GitHub Actions versions. Leave those files untouched even when they contribute to the build, and report them as out of scope if relevant.
 - Interpret **latest** as the newest stable, non-prerelease release verified from authoritative sources at execution time. A major release is eligible; migrate affected usage when compatibility can be preserved. Record both latest available and latest compatible versions when they differ, and explain every retained older version.
 - Inspect every module and dependency scope: production, test, provided, optional, integration, compiler plugins, build plugins, and build tooling. Audit resolved transitive dependencies as well as declarations. Treat tooling and test vulnerabilities separately from deployed runtime vulnerabilities.
 - Preserve the existing Scala binary lines, cross-publishing matrix, minimum JVM and platforms unless the user explicitly approves changing them. Update patch releases within supported lines where compatible. A newer dependency requiring a compiler-line migration is a reported compatibility blocker, not permission to change language support. Use `my-scala-lts-upgrade` for an explicitly approved Scala migration if available, respecting its checkpoints.
@@ -31,7 +32,7 @@ Before editing, run the existing compile and relevant test baseline. Capture com
 
 ## 2. Inventory versions, release age and usage
 
-Use existing dependency-update and graph tooling first. Discover actual supported commands from the repository and tool help rather than assuming a plugin is installed. Examples include sbt's update reports and an existing sbt-updates integration, Mill dependency trees, Scala CLI dependency updates, and Maven/Gradle equivalents where used.
+Use the [sbt-updates](https://github.com/rtimush/sbt-updates) sbt plugin to find the latest versions of dependencies and build plugins. If it is not already installed, add it temporarily through a session-local global plugin (for example `~/.sbt/1.0/plugins/plugins.sbt`, using the latest version from the plugin's README) rather than committing it, and remove it afterwards unless the repository already uses it. Run `sbt dependencyUpdates` (all modules, including the aggregate `;reload plugins; dependencyUpdates` pass for build plugins) and record the output in session artefacts. Treat its results as the primary source for upgrade candidates, still verifying stability and cross-built artifact availability as below. Use sbt's `dependencyTree`/`update` reports for resolution detail. Fall back to Maven's `versions:display-dependency-updates` only for Maven-built modules.
 
 Build a ledger with:
 
@@ -44,7 +45,7 @@ Build a ledger with:
 | Usage | Used, confirmed unused, candidate unused or unknown, with evidence |
 | Outcome | Updated, removed, already current or blocked, with reason and validation |
 
-Include version aliases, dependency-management entries, platform/BOM constraints, bundled libraries and inherited dependencies. Inventory non-Scala manifests contributing to the build or deployed application too. Explicitly mark any unresolved or inaccessible portion instead of claiming complete coverage.
+Include version aliases, dependency-management entries, platform/BOM constraints, bundled libraries and inherited dependencies. Do not inventory or update non-JVM manifests (for example node); note them as out of scope. Explicitly mark any unresolved or inaccessible portion instead of claiming complete coverage.
 
 ### Latest and maintenance evidence
 
@@ -74,7 +75,7 @@ gh api --paginate "repos/OWNER/REPO/dependabot/alerts?state=open&per_page=100"
 
 Inspect severity, advisory/CVE identifiers, manifest, package, affected range and first patched version. Also paginate alerts with `state=dismissed` and reassess high/critical risk exceptions against the current runtime graph; a dismissal does not establish that the vulnerable package is absent or fixed. Preserve the recorded rationale for genuine false positives. Read relevant code-scanning alerts if GitHub also reports high/critical runtime code vulnerabilities; do not conflate their findings with dependency advisories.
 
-Match alerts against **resolved and packaged** runtime dependencies in every deployed module. Treat GitHub scope labels as evidence, not definitive classpath classification. Include provided libraries supplied by the deployment environment. An uncertain runtime classification remains potentially affected until resolved.
+Match alerts against **resolved and packaged** runtime dependencies in every deployed module. Ignore alerts for other ecosystems (for example npm); list them as out of scope without changing them. Treat GitHub scope labels as evidence, not definitive classpath classification. Include provided libraries supplied by the deployment environment. An uncertain runtime classification remains potentially affected until resolved.
 
 A 403/404, disabled alert access, missing permission or unavailable dependency graph means the GitHub audit is **unverified**, not that there are no vulnerabilities. Explain the missing access or feature. Where supported, use an existing local advisory scanner for additional evidence without sending private source or dependency inventories to an unauthorised service; it does not substitute for unavailable GitHub results.
 
