@@ -1,3 +1,4 @@
 [tools]
 copilot = "latest"
 gh = "latest"
+go = "latest"
