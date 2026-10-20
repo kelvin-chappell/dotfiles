@@ -52,7 +52,7 @@ try {
 
   assert.deepEqual(JSON.parse(get('tools.java')), ['latest', '21']);
   assert.equal(get('tools.python'), '3.12');
-  assert.equal(get('tools.node'), '24');
+  assert.equal(get('tools.node'), 'lts');
   for (const tool of ['copilot', 'gh', 'go', 'npm:corepack']) {
     assert.equal(get(`tools.${tool}`), 'latest');
   }
@@ -104,6 +104,18 @@ try {
     assert(entries.has(entry), `${entry} must remain managed by Homebrew`);
   }
   assert(!fs.existsSync(path.join(repo, 'shell/.tool-versions')));
+  assert(!fs.existsSync(path.join(repo, '.tool-versions')));
+  assert.equal(
+    mise('config', 'get', '--file', path.join(repo, 'mise.toml'), 'tools.node'),
+    'lts',
+  );
+  const workflow = fs.readFileSync(
+    path.join(repo, '.github/workflows/update-agent-skills.yml'),
+    'utf8',
+  );
+  assert.match(workflow, /^\s+uses: jdx\/mise-action@v3$/m);
+  assert.match(workflow, /^\s+install_args: node$/m);
+  assert.doesNotMatch(workflow, /^\s+node-version:/m);
   console.log('Global mise configuration tests passed.');
 } finally {
   fs.rmSync(home, { recursive: true });

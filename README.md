@@ -65,7 +65,7 @@ install command:
 
 Both installers link `config/.config/mise/config.toml` to
 `~/.config/mise/config.toml`. Use this file for global mise settings and tool
-versions. The repository-root `.tool-versions` remains specific to this
+versions. The repository-root `mise.toml` remains specific to this
 repository.
 
 Before installing, merge any existing global configuration into this file.
@@ -74,10 +74,15 @@ installer backs them up before linking. Neither installer installs mise or
 downloads the tools selected by the mise configuration.
 
 The global config manages Java (the current release and Java 21), Python 3.12,
-Node 24, Go, sbt, Scala, Unison, and standalone CLI tools. Most tools follow
+Node LTS, Go, sbt, Scala, Unison, and standalone CLI tools. Most tools follow
 `latest`; ack and the macOS Session Manager Plugin use versioned downloads
 with checksums. Update their versions and checksums together. Ack requires
 Perl 5.10.1 or later on the host.
+
+The repository and global mise configs both select Node's `lts` channel. The
+agent-skills workflow uses `jdx/mise-action` to install Node from the
+repository's `mise.toml`. Run `mise upgrade node` to update the installed Node
+release, including newer LTS majors as they become available.
 
 Git, htop, tree, watch and wget use mise's Conda backend, which installs their
 dependencies without a separate Conda installation. The Guardian `fsbp-fix`

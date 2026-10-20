@@ -20,10 +20,10 @@ jobs:
       - name: Check out dotfiles
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Node.js from mise.toml
+        uses: jdx/mise-action@v3
         with:
-          node-version: 24
+          install_args: node
 
       - name: Update managed skills
         run: ./update-agent-skills

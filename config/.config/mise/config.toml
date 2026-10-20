@@ -7,7 +7,7 @@ go = "latest"
 java = ["latest", "21"]
 jq = "latest"
 mkcert = "latest"
-node = "24"
+node = "lts"
 "npm:corepack" = "latest"
 pipx = { version = "latest", depends = ["python"] }
 python = "3.12"
