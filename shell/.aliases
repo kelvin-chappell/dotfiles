@@ -1,1 +1,4 @@
 # Add aliases here using syntax supported by both Bash and zsh.
+alias devdevenv=cli/target/universal/stage/bin/devenv
+alias rm="rm -i"
+alias mv="mv -i"
