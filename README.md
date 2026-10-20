@@ -5,6 +5,7 @@ folder is a Stow "package" whose contents mirror the home directory:
 
 - `git/` -> `~/.gitconfig`, `~/.gitignore_global`
 - `zsh/` -> `~/.zshrc`
+- `shell/` -> `~/.aliases` (shared by Bash and zsh)
 - `config/` -> `~/.config/...` (for example `devenv`, `mise`)
 - `agents/` -> `~/.copilot/agents/...` (global custom agents)
 
@@ -21,10 +22,10 @@ brew bundle --file=brew/Brewfile
 ## Install
 
 ```sh
-./install.sh
+./install
 ```
 
-This runs `stow --restow`, which refreshes the `git`, `zsh`, `config`, and
+This runs `stow --restow`, which refreshes the `git`, `zsh`, `shell`, `config`, and
 `agents` symlinks without adopting existing files into the repo. Stow stops if
 a real file conflicts with a managed path, so move that file aside before
 running the installer again.
@@ -35,7 +36,7 @@ The custom Playwright agents are installed globally under
 ## Dev containers
 
 For dev containers, use `install-in-devcontainer` instead of `install`.
-It symlinks files from the portable packages (`git`, `zsh`, `config`, `agents`)
+It symlinks files from the portable packages (`git`, `zsh`, `shell`, `config`, `agents`)
 into the container without requiring Stow. Existing files and conflicting
 symlinks at managed paths are moved under `~/.dotfiles-backup/<timestamp>/`
 before linking, even if their contents match. Correct symlinks are left
@@ -53,6 +54,41 @@ install command:
 ```
 
 ## Usage
+
+### Shared aliases
+
+Add your aliases to `shell/.aliases`, which is linked to `~/.aliases` on the
+local host and in dev containers. Use syntax supported by both Bash and zsh,
+and guard aliases that depend on platform-specific commands or options.
+
+Both installers preserve the existing `~/.bashrc` and append a marked,
+guarded source block once, creating `.bashrc` if it is missing. The managed
+`.zshrc` loads the same aliases after Oh My Zsh, so your definitions take
+precedence. Neither installer changes your default shell.
+
+Run the appropriate installer to set up Bash loading. Direct Stow commands
+only manage symlinks and do not add the source block to `.bashrc`. An existing
+unmanaged `~/.aliases` causes a conflict with the host installer; move it aside
+and merge any wanted aliases into `shell/.aliases` before retrying. The
+container installer backs up conflicting files using its usual mechanism.
+
+Open a new interactive shell to load aliases, or load them into the current
+Bash or zsh session:
+
+```sh
+. "$HOME/.aliases"
+```
+
+Removing an alias from the file does not remove an already-loaded definition
+from an existing shell. Use `unalias` or open a new shell.
+
+Interactive login Bash reads a profile rather than `.bashrc`. If your host
+uses login Bash, ensure its existing profile sources `~/.bashrc`; the
+installers do not modify profiles. Custom early returns or exits in startup
+files can also prevent the aliases loader from running. A missing aliases
+file is skipped by both loaders.
+
+### Other dotfiles
 
 - Adding a new global skill from a dev container:
 
@@ -116,7 +152,7 @@ install command:
 - Refresh symlinks after adding or moving files:
 
   ```sh
-  stow --restow --target="$HOME" git zsh config agents
+  stow --restow --target="$HOME" git zsh shell config agents
   ```
 
 - Remove a package's symlinks:
@@ -124,3 +160,9 @@ install command:
   ```sh
   stow -D --target="$HOME" <package>
   ```
+
+## Testing
+
+Run `bash tests/test-shell-aliases.sh` with Bash, zsh, and GNU Stow installed.
+The checks use temporary home directories and do not install dotfiles into
+your real home directory.

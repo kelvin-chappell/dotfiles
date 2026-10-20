@@ -10,7 +10,7 @@ set -euo pipefail
 DOTFILES_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 # Portable packages only. The brew package is macOS-only and is never linked.
-PACKAGES=(git zsh config agents)
+PACKAGES=(git zsh shell config agents)
 
 # Backup location for any files we replace. Create it lazily so an idempotent
 # run does not leave an empty backup directory.
@@ -48,6 +48,9 @@ for pkg in "${PACKAGES[@]}"; do
     ln -s "$file" "$target"
   done < <(find "$pkg_dir" -type f -print0)
 done
+
+. "$DOTFILES_DIR/scripts/ensure-bash-aliases.sh"
+ensure_bash_aliases
 
 echo "Dotfiles symlinked into $HOME successfully."
 if [ -n "$BACKUP_DIR" ]; then
