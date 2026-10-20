@@ -13,7 +13,7 @@ The `brew/` folder holds a `Brewfile` and is intentionally not symlinked.
 
 ## Prerequisites
 
-Install Stow (and everything else) via Homebrew:
+Install Stow, mise, system packages and macOS applications via Homebrew:
 
 ```sh
 brew bundle --file=brew/Brewfile
@@ -32,6 +32,12 @@ running the installer again.
 
 The custom Playwright agents are installed globally under
 `~/.copilot/agents`, making them available across repositories.
+
+Install the global runtimes and command-line tools after linking the dotfiles:
+
+```sh
+mise -C "$HOME" install
+```
 
 ## Dev containers
 
@@ -59,13 +65,45 @@ install command:
 
 Both installers link `config/.config/mise/config.toml` to
 `~/.config/mise/config.toml`. Use this file for global mise settings and tool
-versions. The repository-root
-`.tool-versions` remains specific to this repository.
+versions. The repository-root `.tool-versions` remains specific to this
+repository.
 
 Before installing, merge any existing global configuration into this file.
 The host installer stops on conflicting unmanaged files, while the container
 installer backs them up before linking. Neither installer installs mise or
 downloads the tools selected by the mise configuration.
+
+The global config manages Java (the current release and Java 21), Python 3.12,
+Node 24, Go, sbt, Scala, Unison, and standalone CLI tools. Most tools follow
+`latest`; ack and the macOS Session Manager Plugin use versioned downloads
+with checksums. Update their versions and checksums together. Ack requires
+Perl 5.10.1 or later on the host.
+
+Git, htop, tree, watch and wget use mise's Conda backend, which installs their
+dependencies without a separate Conda installation. The Guardian `fsbp-fix`
+and `self-assessment` releases and the configured Session Manager Plugin
+bundles are macOS-only and are skipped in Linux containers. Install the
+Session Manager Plugin through the container's system package manager if it
+is needed there.
+
+Use a recent mise release (2026.10.7 or later) for these backend options.
+After installing mise in a container, run `mise -C "$HOME" install` to install
+its supported tools. The managed zsh configuration activates mise through
+Oh My Zsh. In Bash, follow
+[mise's shell setup](https://mise.jdx.dev/shell-setup.html), or run commands
+with `mise exec --`. Node is managed by mise; avoid activating nvm in the
+same shell.
+
+The Brewfile retains libraries, services, GUI applications and packages whose
+mise replacements need further integration work. The Guardian `gu-base` and
+`gu-scala` metapackages are replaced by explicit dependencies so they do not
+reinstall the migrated tools. Homebrew can still install some overlapping
+tools as dependencies: `dev-nginx`, for example, requires Homebrew's `mkcert`.
+
+Changing the Brewfile does not uninstall existing Homebrew packages. Check
+`mise which <command>` and any hard-coded Homebrew paths before removing old
+installations, and check `brew uses --installed <formula>` for dependants.
+Do not run a blanket Brewfile cleanup as part of this migration.
 
 ### Shared aliases
 
@@ -179,3 +217,7 @@ Run `bash tests/test-shell-aliases.sh` with Bash, zsh, and GNU Stow installed.
 The checks cover shared aliases and global mise configuration links using
 temporary home directories, without installing dotfiles into your real home
 directory.
+
+Run `node tests/test-mise-config.cjs` with Node and mise installed to check the
+global tool declarations, platform restrictions and Brewfile migration
+without downloading or installing tools.
