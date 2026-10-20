@@ -25,6 +25,8 @@ create_fixture() {
   cp "$REPO_DIR/scripts/ensure-bash-aliases.sh" "$FIXTURE/scripts/"
   cp "$REPO_DIR/zsh/.zshrc" "$FIXTURE/zsh/"
   cp "$REPO_DIR/shell/.aliases" "$FIXTURE/shell/"
+  mkdir -p "$FIXTURE/config/.config/mise"
+  cp "$REPO_DIR/config/.config/mise/config.toml" "$FIXTURE/config/.config/mise/"
   printf '\nalias dotfiles_test_alias="printf shared-alias"\n' >> "$FIXTURE/shell/.aliases"
   printf '# Fixture git configuration\n' > "$FIXTURE/git/.gitconfig"
   mkdir -p "$TEST_HOME/.oh-my-zsh"
@@ -66,6 +68,10 @@ for installer in install install-in-devcontainer; do
   install_successfully "$installer"
   [ -L "$TEST_HOME/.aliases" ] || fail "$installer did not link aliases"
   [ "$TEST_HOME/.aliases" -ef "$FIXTURE/shell/.aliases" ] || fail "Wrong aliases target"
+  [ ! -e "$TEST_HOME/.tool-versions" ] && [ ! -L "$TEST_HOME/.tool-versions" ] \
+    || fail "Installer unexpectedly created global .tool-versions"
+  [ "$TEST_HOME/.config/mise/config.toml" -ef "$FIXTURE/config/.config/mise/config.toml" ] \
+    || fail "Wrong global mise config target"
   [ "$TEST_HOME/.gitconfig" -ef "$FIXTURE/git/.gitconfig" ] || fail "Existing package not linked"
   head -c "$(wc -c < "$TEST_ROOT/original-bashrc")" "$TEST_HOME/.bashrc" \
     | cmp - "$TEST_ROOT/original-bashrc" || fail "Existing .bashrc content changed"

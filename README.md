@@ -55,6 +55,18 @@ install command:
 
 ## Usage
 
+### Global mise configuration
+
+Both installers link `config/.config/mise/config.toml` to
+`~/.config/mise/config.toml`. Use this file for global mise settings and tool
+versions. The repository-root
+`.tool-versions` remains specific to this repository.
+
+Before installing, merge any existing global configuration into this file.
+The host installer stops on conflicting unmanaged files, while the container
+installer backs them up before linking. Neither installer installs mise or
+downloads the tools selected by the mise configuration.
+
 ### Shared aliases
 
 Add your aliases to `shell/.aliases`, which is linked to `~/.aliases` on the
@@ -164,5 +176,6 @@ file is skipped by both loaders.
 ## Testing
 
 Run `bash tests/test-shell-aliases.sh` with Bash, zsh, and GNU Stow installed.
-The checks use temporary home directories and do not install dotfiles into
-your real home directory.
+The checks cover shared aliases and global mise configuration links using
+temporary home directories, without installing dotfiles into your real home
+directory.
