@@ -98,3 +98,8 @@ source $ZSH/oh-my-zsh.sh
 if [ -f "$HOME/.aliases" ]; then
   . "$HOME/.aliases"
 fi
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=(/Users/kelvin_chappell/.docker/completions $fpath)
+autoload -Uz compinit
+(( ${+_comps[docker]} )) || compinit
+# End of Docker CLI completions

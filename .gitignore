@@ -1,3 +1,7 @@
 .idea
 *.iml
 .DS_STORE
+logs
+cagent
+jgit
+github-copilot

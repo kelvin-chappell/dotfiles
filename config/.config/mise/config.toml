@@ -1,46 +1,12 @@
 [tools]
 aws-cli = "latest"
-copilot = "latest"
 fzf = "latest"
 gh = "latest"
-go = "latest"
-java = ["latest", "21"]
+java = "lts"
 jq = "latest"
-mkcert = "latest"
 node = "lts"
-"npm:corepack" = "latest"
-pipx = { version = "latest", depends = ["python"] }
-python = "3.12"
 sbt = { version = "latest", depends = ["java"] }
-scala = { version = "latest", depends = ["java"] }
-unison = "latest"
-
-"conda:git" = "latest"
-"conda:htop" = "latest"
-"conda:tree" = "latest"
-"conda:watch" = "latest"
-"conda:wget" = "latest"
 
 # These projects publish release binaries only for macOS.
 "github:guardian/fsbp-tools" = { version = "latest", matching = "fsbp-fix_", os = ["macos"] }
-"github:guardian/self-assessment" = { version = "latest", os = ["macos"] }
 
-[tools."http:ack"]
-version = "3.10.0"
-url = "https://beyondgrep.com/ack-v{{ version }}"
-checksum = "sha256:28a740de59bdb52000a281aa89dc9d44a24a1f144cdfe4bc24b7d0582b40e90e"
-bin = "ack"
-
-[tools."http:session-manager-plugin"]
-version = "1.2.835.0"
-os = ["macos"]
-strip_components = 1
-bin_path = "bin"
-
-[tools."http:session-manager-plugin".platforms.macos-x64]
-url = "https://session-manager-downloads.s3.amazonaws.com/plugin/{{ version }}/mac/sessionmanager-bundle.zip"
-checksum = "sha256:03be79726bbf30ad2a26177d6531636ab6a42f574e0e3326dfb146585cedf260"
-
-[tools."http:session-manager-plugin".platforms.macos-arm64]
-url = "https://session-manager-downloads.s3.amazonaws.com/plugin/{{ version }}/mac_arm64/sessionmanager-bundle.zip"
-checksum = "sha256:7287f20d41eef91643b72dcf28b5f135de49090dd297216a408dc18729e70272"

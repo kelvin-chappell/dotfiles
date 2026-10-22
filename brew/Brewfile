@@ -1,4 +1,4 @@
-tap "guardian/devtools", "git@github.com:guardian/homebrew-devtools.git", trusted: true
+#tap "guardian/devtools", "git@github.com:guardian/homebrew-devtools.git", trusted: true
 # Programmable completion for Bash 3.2
 brew "bash-completion"
 # C Foreign Function Interface for Python
@@ -39,8 +39,6 @@ brew "stow"
 brew "unbound"
 # Tools to configure a local development nginx to proxy our applications and services
 brew "guardian/devtools/dev-nginx"
-# ssh replacement: CLI program that wraps SSM's EC2 Run Command
-brew "guardian/devtools/ssm"
 # Browse, search and analyse your past AI coding sessions
 cask "agentsview"
 # Manage team projects and tasks
@@ -57,22 +55,12 @@ cask "google-chrome"
 cask "gpg-suite"
 # Open-source video transcoder
 cask "handbrake-app"
-# Java IDE by JetBrains
-cask "intellij-idea"
 # Knowledge base that works on top of a local folder of plain text Markdown files
 cask "obsidian"
 # Move and resize windows using keyboard shortcuts or snap areas
 cask "rectangle"
-# Development environment
-cask "vagrant"
-# Virtualiser for arm64 hardware
-cask "virtualbox"
 # Open-source code editor
 cask "visual-studio-code"
-# Open-source code editor
-cask "visual-studio-code@insiders"
-vscode "0xcd.stylish-hindent"
-vscode "adam-bender.commit-message-editor"
 vscode "arrterian.nix-env-selector"
 vscode "bierner.github-markdown-preview"
 vscode "bierner.markdown-checkbox"
@@ -92,19 +80,14 @@ vscode "fabianlauer.vs-code-xml-format"
 vscode "github.vscode-github-actions"
 vscode "github.vscode-pull-request-github"
 vscode "golang.go"
-vscode "haskell.haskell"
-vscode "haskell.language-haskell"
 vscode "hbenl.vscode-test-explorer"
-vscode "hoovercj.haskell-linter"
 vscode "jasonnutter.vscode-codeowners"
-vscode "justusadam.language-haskell"
 vscode "k--kato.intellij-idea-keybindings"
 vscode "mechatroner.rainbow-csv"
 vscode "mhutchie.git-graph"
 vscode "mohithshrivastava.dx-code-companion"
 vscode "ms-azuretools.vscode-containers"
 vscode "ms-azuretools.vscode-docker"
-vscode "ms-kubernetes-tools.vscode-kubernetes-tools"
 vscode "ms-playwright.playwright"
 vscode "ms-python.debugpy"
 vscode "ms-python.python"
