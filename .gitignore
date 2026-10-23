@@ -7,3 +7,4 @@ jgit
 github-copilot
 agents/.copilot/ide
 agents/.copilot/session-state
+config/.config/gh/hosts.yml
