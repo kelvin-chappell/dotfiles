@@ -1,11 +1,8 @@
 [tools]
-aws-cli = "latest"
 fzf = "latest"
 gh = "latest"
-java = "lts"
 jq = "latest"
 node = "lts"
-sbt = { version = "latest", depends = ["java"] }
 
 # These projects publish release binaries only for macOS.
 "github:guardian/fsbp-tools" = { version = "latest", matching = "fsbp-fix_", os = ["macos"] }
