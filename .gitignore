@@ -5,3 +5,5 @@ logs
 cagent
 jgit
 github-copilot
+agents/.copilot/ide
+agents/.copilot/session-state
