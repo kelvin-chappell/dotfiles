@@ -1,0 +1,78 @@
+name: Update Actions lockfile
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - .github/workflows/**
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      UPDATE_BRANCH: automation/actions-lock-${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@v4.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: false
+      - name: Prepare update branch
+        run: git checkout -B "$UPDATE_BRANCH"
+      - name: Install actions-lock
+        run: gh extension install github/gh-actions-lock
+      - name: Update and verify lockfile
+        run: |
+          gh actions-lock
+          gh actions-lock --verify
+      - name: Commit lockfile updates
+        id: lock
+        run: |
+          if [ -z "$(git status --porcelain -- .github/workflows)" ]; then
+            echo "Actions lockfile is up to date."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/
+          git commit -m "chore: update Actions lockfile"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      - name: Generate GitHub App token
+        if: steps.lock.outputs.changed == 'true'
+        id: app-token
+        uses: actions/create-github-app-token@v3.3.0
+        with:
+          client-id: ${{ vars.ACTIONS_LOCK_UPDATER_APP_ID }}
+          private-key: ${{ secrets.ACTIONS_LOCK_UPDATER_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-workflows: write
+      - name: Push update branch and open pull request
+        if: steps.lock.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh auth setup-git
+          git push --force origin "$UPDATE_BRANCH"
+          existing_pr="$(gh pr list --state open --head "${GITHUB_REPOSITORY_OWNER}:${UPDATE_BRANCH}" --base "$PR_HEAD_REF" --json number --jq '.[0].number // empty')"
+          if [ -n "$existing_pr" ]; then
+            gh pr edit "$existing_pr" \
+              --title "chore: update Actions lockfile" \
+              --body "Generated lockfile updates for #${PR_NUMBER}. Merge this pull request to apply them to the source pull request."
+          else
+            gh pr create \
+              --base "$PR_HEAD_REF" \
+              --head "$UPDATE_BRANCH" \
+              --title "chore: update Actions lockfile" \
+              --body "Generated lockfile updates for #${PR_NUMBER}. Merge this pull request to apply them to the source pull request."
+          fi
