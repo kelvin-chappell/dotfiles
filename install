@@ -22,4 +22,23 @@ stow --restow --target="$HOME" --dir="$DOTFILES_DIR" "${PACKAGES[@]}"
 . "$DOTFILES_DIR/scripts/ensure-bash-aliases.sh"
 ensure_bash_aliases
 
+if ! command -v zsh >/dev/null 2>&1; then
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "Error: zsh is not installed and Homebrew is unavailable to install it." >&2
+    exit 1
+  fi
+  echo "Installing zsh..."
+  brew install zsh
+fi
+
+# Runs after stowing so --keep-zshrc preserves the managed ~/.zshrc symlink.
+OMZ_DIR="$HOME/.oh-my-zsh"
+if [ ! -d "$OMZ_DIR" ]; then
+  echo "Installing Oh My Zsh..."
+  omz_installer="$(mktemp)"
+  trap 'rm -f "$omz_installer"' EXIT
+  curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -o "$omz_installer"
+  ZSH="$OMZ_DIR" sh "$omz_installer" --unattended --keep-zshrc
+fi
+
 echo "Dotfiles stowed successfully!"

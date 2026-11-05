@@ -30,6 +30,11 @@ This runs `stow --restow`, which refreshes the `git`, `zsh`, `shell`, `config`, 
 a real file conflicts with a managed path, so move that file aside before
 running the installer again.
 
+The host installer also installs zsh via Homebrew if it is missing, and
+installs [Oh My Zsh](https://ohmyz.sh/) into `~/.oh-my-zsh` if that directory
+does not exist, keeping the managed `~/.zshrc`. It does not change your default
+shell. The dev container installer does not install zsh or Oh My Zsh.
+
 The custom Playwright agents are installed globally under
 `~/.copilot/agents`, making them available across repositories.
 
