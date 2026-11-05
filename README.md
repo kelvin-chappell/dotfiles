@@ -8,6 +8,7 @@ folder is a Stow "package" whose contents mirror the home directory:
 - `shell/` -> `~/.aliases` (shared by Bash and zsh)
 - `config/` -> `~/.config/...` (for example `devenv`, `mise`)
 - `agents/` -> `~/.copilot/agents/...` (global custom agents)
+- `omz/` -> `~/.oh-my-zsh/custom/...` (Oh My Zsh `$ZSH_CUSTOM` files)
 
 The `brew/` folder holds a `Brewfile` and is intentionally not symlinked.
 
@@ -34,6 +35,15 @@ The host installer also installs zsh via Homebrew if it is missing, and
 installs [Oh My Zsh](https://ohmyz.sh/) into `~/.oh-my-zsh` if that directory
 does not exist, keeping the managed `~/.zshrc`. It does not change your default
 shell. The dev container installer does not install zsh or Oh My Zsh.
+
+After Oh My Zsh is present, the host installer stows the `omz` package into
+`~/.oh-my-zsh/custom` (the default `$ZSH_CUSTOM`). It is stowed separately
+because the Oh My Zsh installer refuses to run over an existing
+`~/.oh-my-zsh`. The dev container installer links the `omz` package only when
+`~/.oh-my-zsh` already exists.
+
+`secrets.zsh` is never linked and is ignored by Git. Recreate
+`~/.oh-my-zsh/custom/secrets.zsh` manually on each new machine.
 
 The custom Playwright agents are installed globally under
 `~/.copilot/agents`, making them available across repositories.
@@ -209,10 +219,19 @@ file is skipped by both loaders.
    agents
   ```
   
+- Adding Oh My Zsh custom files (except `secrets.zsh`):
+
+  ```sh
+  mv "$HOME/.oh-my-zsh/custom/<file>" "$HOME/code/dotfiles/omz/.oh-my-zsh/custom/"
+  ```
+
+  Then refresh the symlinks as below.
+
 - Refresh symlinks after adding or moving files:
 
   ```sh
   stow --restow --target="$HOME" git zsh shell config agents
+  stow --restow --target="$HOME" --ignore='(^|/)secrets\.zsh' omz
   ```
 
 - Remove a package's symlinks:
@@ -227,6 +246,9 @@ Run `bash tests/test-shell-aliases.sh` with Bash, zsh, and GNU Stow installed.
 The checks cover shared aliases and global mise configuration links using
 temporary home directories, without installing dotfiles into your real home
 directory.
+
+Run `bash tests/test-omz-custom.sh` with GNU Stow installed to check that
+both installers link Oh My Zsh custom files without touching `secrets.zsh`.
 
 Run `node tests/test-mise-config.cjs` with Node and mise installed to check the
 global tool declarations, platform restrictions and Brewfile migration
