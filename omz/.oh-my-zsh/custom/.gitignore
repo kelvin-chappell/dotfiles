@@ -1,0 +1,2 @@
+# Machine-specific secrets are recreated manually and never linked.
+secrets.zsh

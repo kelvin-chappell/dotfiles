@@ -12,9 +12,19 @@ DOTFILES_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 # Portable packages only. The brew package is macOS-only and is never linked.
 PACKAGES=(git zsh shell config agents)
 
+# Link $ZSH_CUSTOM files only when Oh My Zsh is already installed, so that a
+# later Oh My Zsh install is not blocked by a pre-created ~/.oh-my-zsh.
+if [ -d "$HOME/.oh-my-zsh" ]; then
+  PACKAGES+=(omz)
+fi
+
 # Paths (relative to $HOME) inside the packages that should never be linked
 # in a dev container. Any file under these paths is skipped.
 EXCLUDES=(.config/mise .config/gh)
+
+# File names that are never linked from any package. secrets.zsh is
+# machine-specific and recreated manually.
+EXCLUDED_NAMES=(.gitignore secrets.zsh)
 
 # Backup location for any files we replace. Create it lazily so an idempotent
 # run does not leave an empty backup directory.
@@ -29,6 +39,9 @@ create_backup_dir() {
 
 is_excluded() {
   local rel="$1" ex
+  for ex in "${EXCLUDED_NAMES[@]}"; do
+    [ "${rel##*/}" = "$ex" ] && return 0
+  done
   for ex in "${EXCLUDES[@]}"; do
     case "$rel" in
       "$ex" | "$ex"/*) return 0 ;;

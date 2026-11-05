@@ -4,6 +4,7 @@ set -euo pipefail
 # Manage dotfiles with GNU Stow.
 # Each top-level folder here is a Stow "package" whose contents mirror $HOME.
 # The brew package is intentionally excluded (repo-only, not symlinked).
+# The omz package is stowed separately after Oh My Zsh is installed.
 
 DOTFILES_DIR="$HOME/code/dotfiles"
 PACKAGES=(git zsh shell config agents)
@@ -21,5 +22,28 @@ stow --restow --target="$HOME" --dir="$DOTFILES_DIR" "${PACKAGES[@]}"
 
 . "$DOTFILES_DIR/scripts/ensure-bash-aliases.sh"
 ensure_bash_aliases
+
+if ! command -v zsh >/dev/null 2>&1; then
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "Error: zsh is not installed and Homebrew is unavailable to install it." >&2
+    exit 1
+  fi
+  echo "Installing zsh..."
+  brew install zsh
+fi
+
+# Runs after stowing so --keep-zshrc preserves the managed ~/.zshrc symlink.
+OMZ_DIR="$HOME/.oh-my-zsh"
+if [ ! -d "$OMZ_DIR" ]; then
+  echo "Installing Oh My Zsh..."
+  omz_installer="$(mktemp)"
+  trap 'rm -f "$omz_installer"' EXIT
+  curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -o "$omz_installer"
+  ZSH="$OMZ_DIR" sh "$omz_installer" --unattended --keep-zshrc
+fi
+
+# Link $ZSH_CUSTOM files only once Oh My Zsh exists, as its installer refuses
+# to run over an existing ~/.oh-my-zsh. secrets.zsh is machine-specific.
+stow --restow --target="$HOME" --dir="$DOTFILES_DIR" --ignore='(^|/)secrets\.zsh' omz
 
 echo "Dotfiles stowed successfully!"

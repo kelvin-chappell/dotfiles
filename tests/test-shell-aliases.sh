@@ -24,6 +24,7 @@ create_fixture() {
   cp "$REPO_DIR/install" "$REPO_DIR/install-in-devcontainer" "$FIXTURE/"
   cp "$REPO_DIR/scripts/ensure-bash-aliases.sh" "$FIXTURE/scripts/"
   cp "$REPO_DIR/zsh/.zshrc" "$FIXTURE/zsh/"
+  cp -R "$REPO_DIR/omz" "$FIXTURE/"
   cp "$REPO_DIR/shell/.aliases" "$FIXTURE/shell/"
   mkdir -p "$FIXTURE/config/.config/mise"
   cp "$REPO_DIR/config/.config/mise/config.toml" "$FIXTURE/config/.config/mise/"
