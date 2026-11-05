@@ -1,0 +1,5 @@
+interface:
+  display_name: "Implement Simply"
+  short_description: "Build the smallest valuable slice for review"
+policy:
+  allow_implicit_invocation: false
