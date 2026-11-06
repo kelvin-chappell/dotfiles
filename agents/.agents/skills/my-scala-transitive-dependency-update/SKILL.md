@@ -1,6 +1,6 @@
 ---
 name: my-scala-transitive-dependency-update
-description: 'Update transitive dependencies in sbt-managed Scala projects. Use when asked to upgrade or remove an indirect dependency, or maintain a transitive dependency pin. Establish dependency coordinates and scopes, remove unused dependencies first, recommend Guardian upstream upgrades when sufficient, otherwise pin the latest stable release using the Amigo safeTransitiveDependencies pattern.'
+description: 'Update transitive dependencies in sbt-managed Scala projects. Use when asked to upgrade or remove an indirect dependency, or maintain a transitive dependency pin. Establish dependency coordinates and scopes, remove unused dependencies first, upgrade a direct dependency when that updates the target, defer to upstream Guardian libraries when they solely determine it, otherwise pin the latest stable release using the safeTransitiveDependencies pattern in template.sbt.'
 ---
 
 # Update an sbt transitive dependency
@@ -46,31 +46,43 @@ If the target is unused across all relevant axes:
 
 If the target is already absent with nothing to remove, report that finding and stop. If usage or removal safety remains unresolved, explain the uncertainty and ask for the missing information rather than guessing.
 
-## Gate 2: prefer an upstream Guardian upgrade and stop
+## Gate 2: upgrade a direct dependency and stop
 
-For a required dependency, inspect Guardian-maintained libraries on every introducing path, including Guardian transitive parents. Establish ownership from repository or publication metadata, not solely from a group-name guess.
+Only reach this gate when the target is required. The target dependency is the transitive dependency being upgraded.
 
-Check current stable Guardian releases and their published POMs, build definitions or dependency reports. Determine whether upgrading reachable Guardian dependencies would automatically upgrade the target without adding or increasing a target-specific pin. If the Guardian parent is itself transitive, identify the directly declared dependency that must change to select its newer version.
+Before considering a target-specific pin, check whether upgrading any directly declared dependency on an introducing path would make the target resolve to the desired version. Use published POMs, build definitions or scoped reports, with a temporary build change if needed, and account for all paths, competing pins, eviction and supported variants.
 
-Account for all paths, competing pins, eviction and supported Scala/JDK/platform variants. Verify the resulting target version using published metadata and, when necessary, a temporary build change followed by both scoped reports. Restore only your diagnostic edits.
+If such an upgrade is sufficient:
 
-When a Guardian upgrade is sufficient, tell the user:
+1. Upgrade the direct dependency to the narrowest stable release that selects the desired target version, after checking Scala, JDK and binary/API compatibility.
+2. Remove any existing target pin made redundant by the upgrade.
+3. Continue at Gate 5 to validate, then report the change and **stop**. Do not add a target pin.
 
-- Which declared Guardian dependencies to upgrade, with current and proposed versions, and any intermediate Guardian parent involved.
+If the upgrade is not sufficient, or needs a migration beyond this task, explain why and continue to Gate 3.
+
+## Gate 3: leave the fix to upstream Guardian libraries and stop
+
+Only reach this gate when the target is required and Gate 2 does not apply. If the resolved version of the target is determined solely by Guardian-maintained libraries upstream of it, the update belongs in those libraries rather than in this build. Establish ownership from repository or publication metadata, not solely from a group-name guess.
+
+Check current stable Guardian releases and their published POMs, build definitions or dependency reports. Determine whether upgrading the upstream Guardian libraries would select the desired target version without a target-specific pin here. If a Guardian parent is itself transitive, identify the intermediate parents involved. Account for all paths, competing pins, eviction and supported Scala/JDK/platform variants, and verify using published metadata. If any non-Guardian path or pin also affects the target's resolved version, this gate does not apply; continue to Gate 4.
+
+When the fix belongs upstream, tell the user:
+
+- Which Guardian libraries need to release or upgrade, with current and proposed versions, and any intermediate parent involved.
 - Which target version would resolve, on which axes, and the evidence/source URLs.
 - Any compatibility prerequisites or existing redundant pin that would need removing.
 
-**Stop without leaving dependency changes or adding a target pin.** This is a recommendation to the user, not permission to perform the upstream upgrades. If release information is inaccessible, report the blocker rather than assuming this gate does not apply.
+**Stop without leaving dependency changes or adding a target pin.** This is a recommendation to the user, not permission to change upstream libraries. If release information is inaccessible, report the blocker rather than assuming this gate does not apply.
 
-## Gate 3: select the latest stable release and edit the build
+## Gate 4: select the latest stable release and edit the build
 
-Only reach this gate when the dependency is required and Gate 2 does not provide an upstream solution.
+Only reach this gate when the dependency is required and neither Gate 2 nor Gate 3 provides a solution.
 
 Resolve the latest stable release at execution time from the artefact's authoritative repository metadata and upstream release notes. Verify publication for the exact coordinates and every required cross-version. Exclude snapshots, milestones, release candidates, alpha/beta, nightly and other prereleases; do not assume the metadata's `release` field guarantees stability or sort version strings lexicographically.
 
 Record the selected version and source URLs. Check Scala, JDK, binary/API and related-module compatibility. If the latest stable release requires a migration beyond this task, explain the blocker and ask before expanding scope or selecting an older release. Never silently label an older compatible release as the latest stable.
 
-Follow the structure of the pinned [Amigo build template](https://github.com/guardian/amigo/blob/e959726e58988140f7c8ebc29e5f2af40b546b95/build.sbt#L74-L80): a maintenance comment, a `safeTransitiveDependencies` value containing a `Seq`, and that sequence appended to the relevant `libraryDependencies`. Read adjacent lines to see the complete declaration and wiring. Reuse an existing equivalent block rather than creating duplicates.
+Follow the structure of [template.sbt](template.sbt), alongside this file: a maintenance comment, a `safeTransitiveDependencies` value containing a `Seq`, and that sequence appended to the relevant `libraryDependencies`. Read adjacent lines to see the complete declaration and wiring. Reuse an existing equivalent block rather than creating duplicates.
 
 Illustrative shape only; substitute verified coordinates, version, cross-version operator and scope:
 
@@ -91,7 +103,7 @@ libraryDependencies ++= Seq(
 
 Keep the sequence local to the affected project, or reuse shared definitions only where all consumers need the same pin. Update an existing target entry instead of adding another. Retain the correct `%`/`%%` and any necessary cross-version configuration. Use aligned version variables for modules that upstream requires to move together, explaining any necessary companion changes.
 
-## Gate 4: assign the correct scope and validate
+## Gate 5: assign the correct scope and validate
 
 Scope is part of the edit, not an optional follow-up. Select the narrowest configuration or explicit configuration mapping that covers all demonstrated uses:
 
@@ -108,7 +120,7 @@ Apply sbt's actual configuration inheritance. A runtime or test pin does not upd
 After editing:
 
 1. Rerun `dependencyTree` and `dependencyList` on every affected axis. Verify the expected version is selected, older versions are not selected, and the artefact has not leaked into unintended configurations. An evicted node is not a selected dependency.
-2. Run the affected compilation and tests, plus packaging or a focused runtime smoke check when runtime behaviour is involved. Use repository-standard formatting checks for touched build files.
+2. Run final verification, all of which must pass: compile all code (including Test and any custom configurations), run all tests, run `scalafmtSbt` and `scalafmtAll`, and run `Runtime / dependencyList` for each affected project. Confirm `Runtime / dependencyList` is available and shows the expected outcome (target at the intended version, no older version selected). Add packaging or a focused runtime smoke check when runtime behaviour is involved.
 3. Review the final diff for duplicate pins, unused version variables, scope widening and leftover diagnostic edits. If normal `libraryDependencies` version selection does not select the requested release, investigate competing constraints and report the cause rather than silently introducing a global override.
 
 Report the changed files, introducing dependency path, old and new resolved versions, chosen scope and rationale, release sources, and the actual updated Scala code block. State any failed or unrun checks and their causes explicitly; an unverified change remains incomplete.
